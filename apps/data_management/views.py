@@ -150,7 +150,7 @@ def upload_data(request):
                 df['销量'] = df['销量'].replace([np.nan], 0)
                 df.loc[df['销量'] < 0, '销量'] = 0
 
-            for row_index, (_, row) in enumerate(df.iterrows()):
+            for row_index, (_idx, row) in enumerate(df.iterrows()):
                 row_number = row_index + 2
                 try:
                     material_number_raw = row.get('物料号')

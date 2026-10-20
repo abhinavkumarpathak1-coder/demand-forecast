@@ -1,0 +1,606 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block content %}
+<div class="page-container">
+
+    <!-- 页面标题 -->
+    <div class="page-header mb-4">
+        <h4 class="page-title"><i class="bi bi-lightbulb me-2"></i>{% translate "数据洞察" %}</h4>
+        <p class="page-desc">{% translate "按区域和SKU维度分析销售数据，查看Top排行与销量趋势" %}</p>
+    </div>
+
+    <!-- 筛选区 -->
+    <div class="card card-hover mb-4">
+        <div class="card-header bg-primary-subtle">
+            <div class="d-flex align-items-center">
+                <span class="icon-circle-sm bg-primary-subtle text-primary me-2">
+                    <i class="bi bi-funnel"></i>
+                </span>
+                <span class="fw-semibold">{% translate "筛选条件" %}</span>
+            </div>
+        </div>
+        <div class="card-body">
+            <form method="get" id="filterForm">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label small text-uppercase text-muted">{% translate "销售区域（可多选）" %}</label>
+                        <div class="border rounded p-2" style="max-height:140px; overflow:auto;">
+                            <div class="form-check mb-1 border-bottom pb-1">
+                                <input class="form-check-input" type="checkbox" id="region_select_all">
+                                <label class="form-check-label fw-bold" for="region_select_all">{% translate "全选" %}</label>
+                            </div>
+                            {% for r in regions %}
+                            <div class="form-check">
+                                <input class="form-check-input region-checkbox" type="checkbox" name="region" value="{{ r }}" id="region_{{ forloop.counter }}" {% if r in selected_regions %}checked{% endif %}>
+                                <label class="form-check-label" for="region_{{ forloop.counter }}">{{ r }}</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small text-uppercase text-muted">{% translate "物料号(SKU)（可多选）" %}</label>
+                        <div class="border rounded p-2" style="max-height:140px; overflow:auto;" id="skuFilterContainer">
+                            <div class="form-check mb-1 border-bottom pb-1">
+                                <input class="form-check-input" type="checkbox" id="sku_filter_select_all">
+                                <label class="form-check-label fw-bold" for="sku_filter_select_all">{% translate "全选" %}</label>
+                            </div>
+                            {% for s in skus %}
+                            <div class="form-check sku-check-item" data-sku="{{ s }}">
+                                <input class="form-check-input" type="checkbox" name="sku" value="{{ s }}" id="sku_{{ forloop.counter }}" {% if s in selected_skus %}checked{% endif %}>
+                                <label class="form-check-label" for="sku_{{ forloop.counter }}">{{ s }}</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small text-uppercase text-muted">{% translate "日期范围" %}</label>
+                        <input type="date" name="start_date" class="form-control" value="{{ start_date }}" placeholder="{% translate '开始日期' %}">
+                        <input type="date" name="end_date" class="form-control mt-2" value="{{ end_date }}" placeholder="{% translate '结束日期' %}">
+                        <button class="btn btn-dark w-100 mt-2" type="submit"><i class="bi bi-search me-1"></i>{% translate "查询" %}</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Top5 饼图 -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card card-hover h-100">
+                <div class="card-header bg-primary-subtle">
+                    <div class="d-flex align-items-center">
+                        <span class="icon-circle-sm bg-primary-subtle text-primary me-2">
+                            <i class="bi bi-pie-chart"></i>
+                        </span>
+                        <span class="fw-semibold">{% translate "Top5 销售区域" %}</span>
+                        <small class="text-muted ms-2">{% translate "点击查看SKU明细" %}</small>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div style="position:relative; height:280px;">
+                        <canvas id="chartTopRegions"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card card-hover h-100">
+                <div class="card-header bg-primary-subtle">
+                    <div class="d-flex align-items-center">
+                        <span class="icon-circle-sm bg-primary-subtle text-primary me-2">
+                            <i class="bi bi-pie-chart"></i>
+                        </span>
+                        <span class="fw-semibold">Top5 SKU</span>
+                        <small class="text-muted ms-2">{% translate "点击查看区域明细" %}</small>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div style="position:relative; height:280px;">
+                        <canvas id="chartTopSKUs"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 销量趋势图 -->
+    <div class="card card-hover mb-4" id="trend-section">
+        <div class="card-header bg-primary-subtle">
+            <div class="d-flex align-items-center">
+                <span class="icon-circle-sm bg-primary-subtle text-primary me-2">
+                    <i class="bi bi-graph-up"></i>
+                </span>
+                <span class="fw-semibold">{% translate "指定产品销量趋势" %}</span>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row g-3 mb-3">
+                <div class="col-md-4">
+                    <label class="form-label small text-uppercase text-muted">{% translate "选择用于趋势图的物料号" %}</label>
+                    <div class="border rounded p-2" style="max-height:180px; overflow:auto;" id="chartSkuContainer">
+                        <div class="form-check mb-1 border-bottom pb-1">
+                            <input class="form-check-input" type="checkbox" id="chart_sku_select_all">
+                            <label class="form-check-label fw-bold" for="chart_sku_select_all">{% translate "全选" %}</label>
+                        </div>
+                        {% for s in skus %}
+                        <div class="form-check chart-sku-check-item" data-sku="{{ s }}">
+                            <input class="form-check-input chart-sku-cb" type="checkbox" name="chart_sku" value="{{ s }}" id="chart_sku_{{ forloop.counter }}" {% if s in selected_chart_skus %}checked{% endif %}>
+                            <label class="form-check-label" for="chart_sku_{{ forloop.counter }}">{{ s }}</label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small text-uppercase text-muted">{% translate "时间粒度" %}</label>
+                    <select id="timeUnitSelect" name="time_unit" class="form-select">
+                        <option value="year" {% if time_unit == 'year' %}selected{% endif %}>{% translate "年度" %}</option>
+                        <option value="quarter" {% if time_unit == 'quarter' %}selected{% endif %}>{% translate "季度" %}</option>
+                        <option value="month" {% if time_unit == 'month' %}selected{% endif %}>{% translate "月度" %}</option>
+                        <option value="week" {% if time_unit == 'week' %}selected{% endif %}>{% translate "周度" %}</option>
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button class="btn btn-outline-dark" id="updateTrendBtn"><i class="bi bi-arrow-repeat me-1"></i>{% translate "更新折线图" %}</button>
+                </div>
+            </div>
+            <div style="position:relative; height:380px;">
+                <canvas id="chartTrend"></canvas>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- 区域 Top5 SKU 弹窗 -->
+<div class="modal fade" id="regionSkuModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="regionSkuModalTitle">{% translate "区域 Top5 SKU" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div style="position:relative; height:320px;">
+                    <canvas id="chartRegionSkuDetail"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SKU Top5 区域弹窗 -->
+<div class="modal fade" id="skuRegionModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="skuRegionModalTitle">{% translate "SKU Top5 区域" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div style="position:relative; height:320px;">
+                    <canvas id="chartSkuRegionDetail"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+<script>
+// 注册 datalabels 插件
+Chart.register(ChartDataLabels);
+
+const topRegionsLabels = {{ top_regions|safe }};
+const topRegionsValues = {{ top_regions_values|safe }};
+const topSKUsLabels = {{ top_skus|safe }};
+const topSKUsValues = {{ top_skus_values|safe }};
+const trendLabels = {{ trend_labels|safe }};
+const trendDatasets = {{ trend_datasets|safe }};
+
+// 区域→SKU映射及Top5 SKU明细（用于前端交互）
+const regionSkuMap = {{ region_sku_map_json|safe }};
+const topRegionSkusMap = {{ top_region_skus_map_json|safe }};
+const topSkuRegionsMap = {{ top_sku_regions_map_json|safe }};
+
+// ======================== 饼图渲染（含百分比标签） ========================
+const PIE_COLORS = ['#4e79a7','#f28e2b','#e15759','#76b7b2','#59a14f'];
+
+function createPie(id, labels, data, onClickRegion){
+    if (!data || data.length === 0) {
+        console.warn('createPie: empty data for ' + id);
+        return null;
+    }
+    const total = data.reduce((a,b)=>a+b, 0);
+    const ctx = document.getElementById(id).getContext('2d');
+    const chart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: data,
+                backgroundColor: PIE_COLORS
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom' },
+                datalabels: {
+                    color: '#fff',
+                    font: { weight: 'bold', size: 11 },
+                    formatter: function(value, context) {
+                        if (total === 0) return '';
+                        const pct = ((value / total) * 100).toFixed(1);
+                        return pct + '%';
+                    },
+                    display: function(context) {
+                        const val = context.dataset.data[context.dataIndex];
+                        if (total === 0) return false;
+                        return (val / total) >= 0.05; // 小于5%不显示
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(ctx) {
+                            const val = ctx.raw;
+                            const pct = total > 0 ? ((val / total) * 100).toFixed(1) : '0.0';
+                            return ctx.label + ': ' + val.toLocaleString() + ' (' + pct + '%)';
+                        }
+                    }
+                }
+            },
+            onClick: onClickRegion || undefined
+        },
+        plugins: [ChartDataLabels]
+    });
+    return chart;
+}
+
+// ======================== 1. SKU自动过滤 ========================
+function filterSkusByRegions() {
+    const checkedRegions = Array.from(document.querySelectorAll('.region-checkbox:checked')).map(cb => cb.value);
+    const skuItems = document.querySelectorAll('#skuFilterContainer .sku-check-item');
+    const chartSkuItems = document.querySelectorAll('#chartSkuContainer .chart-sku-check-item');
+
+    if (checkedRegions.length === 0) {
+        skuItems.forEach(item => item.style.display = '');
+        chartSkuItems.forEach(item => item.style.display = '');
+    } else {
+        const allowedSkus = new Set();
+        checkedRegions.forEach(reg => {
+            if (regionSkuMap[reg]) {
+                regionSkuMap[reg].forEach(s => allowedSkus.add(s));
+            }
+        });
+        skuItems.forEach(item => {
+            const sku = item.getAttribute('data-sku');
+            item.style.display = allowedSkus.has(sku) ? '' : 'none';
+        });
+        chartSkuItems.forEach(item => {
+            const sku = item.getAttribute('data-sku');
+            item.style.display = allowedSkus.has(sku) ? '' : 'none';
+        });
+    }
+    updateChartSelectAllState();
+    updateSkuFilterSelectAllState();
+}
+
+// ======================== 筛选区全选功能 ========================
+function updateRegionSelectAllState() {
+    const selectAllCb = document.getElementById('region_select_all');
+    const cbs = document.querySelectorAll('.region-checkbox');
+    if (cbs.length === 0) {
+        selectAllCb.checked = false;
+        selectAllCb.indeterminate = false;
+        return;
+    }
+    const checkedCount = Array.from(cbs).filter(cb => cb.checked).length;
+    if (checkedCount === 0) {
+        selectAllCb.checked = false;
+        selectAllCb.indeterminate = false;
+    } else if (checkedCount === cbs.length) {
+        selectAllCb.checked = true;
+        selectAllCb.indeterminate = false;
+    } else {
+        selectAllCb.checked = false;
+        selectAllCb.indeterminate = true;
+    }
+}
+
+function updateSkuFilterSelectAllState() {
+    const selectAllCb = document.getElementById('sku_filter_select_all');
+    const visibleItems = Array.from(document.querySelectorAll('#skuFilterContainer .sku-check-item'))
+        .filter(item => item.style.display !== 'none');
+    if (visibleItems.length === 0) {
+        selectAllCb.checked = false;
+        selectAllCb.indeterminate = false;
+        return;
+    }
+    const checkedCount = visibleItems.filter(item => item.querySelector('input[type="checkbox"]').checked).length;
+    if (checkedCount === 0) {
+        selectAllCb.checked = false;
+        selectAllCb.indeterminate = false;
+    } else if (checkedCount === visibleItems.length) {
+        selectAllCb.checked = true;
+        selectAllCb.indeterminate = false;
+    } else {
+        selectAllCb.checked = false;
+        selectAllCb.indeterminate = true;
+    }
+}
+
+document.getElementById('region_select_all').addEventListener('change', function() {
+    const checked = this.checked;
+    document.querySelectorAll('.region-checkbox').forEach(cb => {
+        cb.checked = checked;
+    });
+    filterSkusByRegions();
+});
+
+document.querySelectorAll('.region-checkbox').forEach(cb => {
+    cb.addEventListener('change', function() {
+        updateRegionSelectAllState();
+    });
+});
+
+document.getElementById('sku_filter_select_all').addEventListener('change', function() {
+    const checked = this.checked;
+    document.querySelectorAll('#skuFilterContainer .sku-check-item').forEach(item => {
+        if (item.style.display !== 'none') {
+            item.querySelector('input[type="checkbox"]').checked = checked;
+        }
+    });
+});
+
+document.querySelectorAll('#skuFilterContainer .sku-check-item input[type="checkbox"]').forEach(cb => {
+    cb.addEventListener('change', function() {
+        updateSkuFilterSelectAllState();
+    });
+});
+
+// ======================== 5. 趋势图全选功能 ========================
+function updateChartSelectAllState() {
+    const selectAllCb = document.getElementById('chart_sku_select_all');
+    const visibleCbs = Array.from(document.querySelectorAll('#chartSkuContainer .chart-sku-check-item'))
+        .filter(item => item.style.display !== 'none')
+        .map(item => item.querySelector('.chart-sku-cb'));
+    if (visibleCbs.length === 0) {
+        selectAllCb.checked = false;
+        selectAllCb.indeterminate = false;
+        return;
+    }
+    const checkedCount = visibleCbs.filter(cb => cb.checked).length;
+    if (checkedCount === 0) {
+        selectAllCb.checked = false;
+        selectAllCb.indeterminate = false;
+    } else if (checkedCount === visibleCbs.length) {
+        selectAllCb.checked = true;
+        selectAllCb.indeterminate = false;
+    } else {
+        selectAllCb.checked = false;
+        selectAllCb.indeterminate = true;
+    }
+}
+
+document.getElementById('chart_sku_select_all').addEventListener('change', function() {
+    const checked = this.checked;
+    document.querySelectorAll('#chartSkuContainer .chart-sku-check-item').forEach(item => {
+        if (item.style.display !== 'none') {
+            item.querySelector('.chart-sku-cb').checked = checked;
+        }
+    });
+});
+
+document.querySelectorAll('.chart-sku-cb').forEach(cb => {
+    cb.addEventListener('change', updateChartSelectAllState);
+});
+
+// ======================== 3. 点击Top5区域弹出该区域Top5 SKU ========================
+let regionDetailChart = null;
+let skuRegionDetailChart = null;
+
+function showRegionSkuModal(regionCode) {
+    const data = topRegionSkusMap[regionCode];
+    if (!data || !data.skus || data.skus.length === 0) {
+        alert('{% translate "该区域暂无SKU数据" %}');
+        return;
+    }
+    document.getElementById('regionSkuModalTitle').textContent = regionCode + '  Top5 SKU';
+
+    const modal = new bootstrap.Modal(document.getElementById('regionSkuModal'));
+    modal.show();
+
+    document.getElementById('regionSkuModal').addEventListener('shown.bs.modal', function handler() {
+        document.getElementById('regionSkuModal').removeEventListener('shown.bs.modal', handler);
+        if (regionDetailChart) { regionDetailChart.destroy(); regionDetailChart = null; }
+        const total = data.values.reduce((a,b)=>a+b, 0);
+        const ctx = document.getElementById('chartRegionSkuDetail').getContext('2d');
+        regionDetailChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: data.skus,
+                datasets: [{
+                    data: data.values,
+                    backgroundColor: PIE_COLORS
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' },
+                    datalabels: {
+                        color: '#fff',
+                        font: { weight: 'bold', size: 11 },
+                        formatter: function(value) {
+                            if (total === 0) return '';
+                            return ((value / total) * 100).toFixed(1) + '%';
+                        },
+                        display: function(context) {
+                            const val = context.dataset.data[context.dataIndex];
+                            if (total === 0) return false;
+                            return (val / total) >= 0.05;
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) {
+                                const val = ctx.raw;
+                                const pct = total > 0 ? ((val / total) * 100).toFixed(1) : '0.0';
+                                return ctx.label + ': ' + val.toLocaleString() + ' (' + pct + '%)';
+                            }
+                        }
+                    }
+                }
+            },
+            plugins: [ChartDataLabels]
+        });
+    }, { once: true });
+}
+
+// ======================== 4. 点击Top5 SKU弹出该SKU Top5区域 ========================
+function showSkuRegionModal(skuCode) {
+    const data = topSkuRegionsMap[skuCode];
+    if (!data || !data.regions || data.regions.length === 0) {
+        alert('{% translate "该SKU暂无区域数据" %}');
+        return;
+    }
+    document.getElementById('skuRegionModalTitle').textContent = skuCode + '{% translate "Top5 区域" %}';
+
+    const modal = new bootstrap.Modal(document.getElementById('skuRegionModal'));
+    modal.show();
+
+    document.getElementById('skuRegionModal').addEventListener('shown.bs.modal', function handler() {
+        document.getElementById('skuRegionModal').removeEventListener('shown.bs.modal', handler);
+        if (skuRegionDetailChart) { skuRegionDetailChart.destroy(); skuRegionDetailChart = null; }
+        const total = data.values.reduce((a,b)=>a+b, 0);
+        const ctx = document.getElementById('chartSkuRegionDetail').getContext('2d');
+        skuRegionDetailChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: data.regions,
+                datasets: [{
+                    data: data.values,
+                    backgroundColor: PIE_COLORS
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' },
+                    datalabels: {
+                        color: '#fff',
+                        font: { weight: 'bold', size: 11 },
+                        formatter: function(value) {
+                            if (total === 0) return '';
+                            return ((value / total) * 100).toFixed(1) + '%';
+                        },
+                        display: function(context) {
+                            const val = context.dataset.data[context.dataIndex];
+                            if (total === 0) return false;
+                            return (val / total) >= 0.05;
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) {
+                                const val = ctx.raw;
+                                const pct = total > 0 ? ((val / total) * 100).toFixed(1) : '0.0';
+                                return ctx.label + ': ' + val.toLocaleString() + ' (' + pct + '%)';
+                            }
+                        }
+                    }
+                }
+            },
+            plugins: [ChartDataLabels]
+        });
+    }, { once: true });
+}
+
+// ======================== 主初始化 ========================
+document.addEventListener('DOMContentLoaded', function(){
+    // 初始化SKU过滤
+    filterSkusByRegions();
+    updateRegionSelectAllState();
+
+    // 区域checkbox变化时过滤SKU
+    document.querySelectorAll('.region-checkbox').forEach(cb => {
+        cb.addEventListener('change', filterSkusByRegions);
+    });
+
+    // 初始状态更新全选复选框
+    updateChartSelectAllState();
+
+    // 创建两个饼图
+    createPie('chartTopRegions', topRegionsLabels, topRegionsValues, function(evt, elements) {
+        if (elements && elements.length > 0) {
+            const idx = elements[0].index;
+            const regionCode = topRegionsLabels[idx];
+            showRegionSkuModal(regionCode);
+        }
+    });
+    createPie('chartTopSKUs', topSKUsLabels, topSKUsValues, function(evt, elements) {
+        if (elements && elements.length > 0) {
+            const idx = elements[0].index;
+            const skuCode = topSKUsLabels[idx];
+            showSkuRegionModal(skuCode);
+        }
+    });
+
+    // 折线图（固定高度由容器控制）
+    if (trendLabels && trendLabels.length > 0 && trendDatasets && trendDatasets.length > 0) {
+        const ctx = document.getElementById('chartTrend').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: trendLabels,
+                datasets: trendDatasets.map((dataset, idx) => ({
+                    label: dataset.label,
+                    data: dataset.data,
+                    borderColor: ['#4e79a7','#f28e2b','#e15759','#76b7b2','#59a14f',
+                                  '#af7aa1','#ff9da7','#9c755f','#bab0ac','#b07aa1'][idx % 10],
+                    tension: 0.2,
+                    fill: false,
+                    pointRadius: 2
+                }))
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' } },
+                scales: {
+                    x: { display: true, title: { display: true, text: '{% translate "时间" %}' } },
+                    y: { display: true, title: { display: true, text: '{% translate "销量" %}' }, beginAtZero: true }
+                }
+            }
+        });
+    }
+
+    // 更新趋势图按钮
+    document.getElementById('updateTrendBtn')?.addEventListener('click', function(e){
+        e.preventDefault();
+        const params = new URLSearchParams();
+        document.querySelectorAll('input[name="region"]:checked').forEach(i=>params.append('region', i.value));
+        document.querySelectorAll('input[name="sku"]:checked').forEach(i=>params.append('sku', i.value));
+        const sd = document.querySelector('input[name="start_date"]')?.value;
+        const ed = document.querySelector('input[name="end_date"]')?.value;
+        if (sd) params.set('start_date', sd);
+        if (ed) params.set('end_date', ed);
+        document.querySelectorAll('input[name="chart_sku"]:checked').forEach(i=>params.append('chart_sku', i.value));
+        const tu = document.querySelector('select[name="time_unit"]')?.value;
+        if (tu) params.set('time_unit', tu);
+        const base = window.location.pathname;
+        window.location = base + '?' + params.toString() + '#trend-section';
+    });
+
+    document.getElementById('timeUnitSelect')?.addEventListener('change', function(){
+        document.getElementById('updateTrendBtn')?.click();
+    });
+});
+</script>
+{% endblock %}

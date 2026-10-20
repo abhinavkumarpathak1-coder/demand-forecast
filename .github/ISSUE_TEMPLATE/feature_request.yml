@@ -1,0 +1,40 @@
+name: Feature request
+description: Suggest an improvement / 提出功能建议
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / 要解决的问题
+      description: What is missing or painful today?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution / 期望方案
+      description: Describe the feature or the algorithm you would like to see.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered / 备选方案
+      description: Any workaround you are using today.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected area / 涉及模块
+      options:
+        - Data Management / 数据管理
+        - Data Insight / 数据洞察
+        - Model Training / 模型训练
+        - Demand Forecast / 需求预测
+        - What-If / What-If 分析
+        - i18n / 多语言
+        - Other / 其他
+    validations:
+      required: true

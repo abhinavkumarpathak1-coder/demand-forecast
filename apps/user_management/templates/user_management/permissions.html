@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <div class="card mt-4">
+            <div class="card-body">
+                <h2 class="card-title">{% translate "权限管理" %}</h2>
+                <p>{% translate "这里显示用户角色和权限设置。" %}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

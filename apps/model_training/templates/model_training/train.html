@@ -1,0 +1,542 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+{% block title %}{% translate "模型训练" %}{% endblock %}
+{% block content %}
+<div class="page-container">
+  <h4 class="mb-3">{% translate "模型训练" %}</h4>
+
+  {% if training_errors %}
+  <div class="alert alert-danger alert-dismissible fade show" id="serverErrors">
+    {% for err in training_errors %}<p class="mb-1">{{ err }}</p>{% endfor %}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+  {% endif %}
+  <div class="alert alert-danger d-none" id="ajaxErrors"></div>
+
+  <form method="post" id="trainForm" action="{% url 'model:train' %}">
+    {% csrf_token %}
+
+    <!-- ───────── 筛选条件 ───────── -->
+    <div class="card mb-3">
+      <div class="card-header"><strong>{% translate "筛选条件" %}</strong></div>
+      <div class="card-body">
+        <!-- 分类级联 -->
+        <div class="row g-3 mb-3">
+          <div class="col-md-2">
+            <label class="form-label fw-bold">{% translate "产品一级分类" %}</label>
+            <div class="cascade-panel border rounded p-2" id="panel-l1"></div>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label fw-bold">{% translate "产品二级分类" %}</label>
+            <div class="cascade-panel border rounded p-2" id="panel-l2"></div>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label fw-bold">{% translate "产品三级分类" %}</label>
+            <div class="cascade-panel border rounded p-2" id="panel-l3"></div>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label fw-bold">{% translate "产品四级分类" %}</label>
+            <div class="cascade-panel border rounded p-2" id="panel-l4"></div>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label fw-bold">{% translate "产品五级分类" %}</label>
+            <div class="cascade-panel border rounded p-2" id="panel-l5"></div>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label fw-bold">SKU</label>
+            <div class="cascade-panel border rounded p-2" id="panel-sku"></div>
+          </div>
+        </div>
+        <div class="text-muted small mb-2">{% translate "提示: 未勾选的分类层级将自动视为全选" %}</div>
+        <!-- 区域 + 日期 + 按钮 -->
+        <div class="row g-3 align-items-start">
+          <div class="col-md-8">
+            <label class="form-label fw-bold">{% translate "销售区域" %}</label>
+            <div class="cascade-panel border rounded p-2" id="panel-region"></div>
+          </div>
+          <div class="col-md-4">
+            <label for="startDate" class="form-label fw-bold">{% translate "开始日期" %}</label>
+            <input type="month" class="form-control mb-2" id="startDate" name="start_date"
+                   value="{{ selected_start_date|default:default_start_date }}">
+            <label for="endDate" class="form-label fw-bold">{% translate "结束日期" %}</label>
+            <input type="month" class="form-control mb-3" id="endDate" name="end_date"
+                   value="{{ selected_end_date|default:default_end_date }}">
+            <button type="button" class="btn btn-primary w-100" id="trainBtn" disabled onclick="submitTrainForm()">
+              <i class="bi bi-play-fill"></i> {% translate "开始训练" %}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+
+</div>
+
+<!-- ───────── JSON 数据桥梁 ───────── -->
+{{ category_tree|json_script:"categoryTreeData" }}
+{{ regions_list|json_script:"regionsData" }}
+{{ sku_regions_map|json_script:"skuRegionsMapData" }}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+  // ========== 读取后端数据 ==========
+  var categoryTree, regionList = [], skuRegionsMap = {};
+
+  try {
+    var el = document.getElementById('categoryTreeData');
+    if (el) categoryTree = JSON.parse(el.textContent);
+  } catch(e) { console.error('{% translate "解析分类树失败" %}', e); }
+
+  try {
+    var rel = document.getElementById('regionsData');
+    if (rel) regionList = JSON.parse(rel.textContent);
+  } catch(e) { console.error('{% translate "解析区域数据失败" %}', e); }
+
+  try {
+    var srm = document.getElementById('skuRegionsMapData');
+    if (srm) skuRegionsMap = JSON.parse(srm.textContent);
+  } catch(e) { console.error('{% translate "解析SKU区域映射失败" %}', e); }
+
+  if (!categoryTree) return;
+
+  // ========== 常量映射 ==========
+  var LEVEL_MAP = { l1:'all_l1', l2:'all_l2', l3:'all_l3', l4:'all_l4', l5:'all_l5', sku:'all_skus' };
+  var PARENT_MAP = { l2:'l1', l3:'l2', l4:'l3', l5:'l4', sku:'l5' };
+  var CHILD_MAP  = { l1:'l1_to_l2', l2:'l2_to_l3', l3:'l3_to_l4', l4:'l4_to_l5', l5:'l5_to_sku' };
+
+  // ========== 预选值（重新提交时回显） ==========
+  var preselected = {
+    l1: {{ selected_l1|safe|default:"[]" }},
+    l2: {{ selected_l2|safe|default:"[]" }},
+    l3: {{ selected_l3|safe|default:"[]" }},
+    l4: {{ selected_l4|safe|default:"[]" }},
+    l5: {{ selected_l5|safe|default:"[]" }},
+    sku: {{ selected_skus|safe|default:"[]" }},
+    region: {{ selected_regions|safe|default:"[]" }}
+  };
+
+  // ========== 渲染函数 ==========
+  function renderPanel(level, options) {
+    var panel = document.getElementById('panel-' + level);
+    if (!panel) return;
+    panel.innerHTML = '';
+
+    if (!options || options.length === 0) {
+      panel.innerHTML = '<div class="text-muted small text-center">{% translate "（无）" %}</div>';
+      return;
+    }
+
+    // 全选复选框
+    var allDiv = document.createElement('div');
+    allDiv.className = 'form-check mb-1';
+    var allCb = document.createElement('input');
+    allCb.className = 'form-check-input select-all-cb';
+    allCb.type = 'checkbox';
+    allCb.id = 'select-all-' + level;
+    allCb.setAttribute('data-level', level);
+    var allLabel = document.createElement('label');
+    allLabel.className = 'form-check-label small fw-bold';
+    allLabel.setAttribute('for', 'select-all-' + level);
+    allLabel.textContent = '{% translate "全选" %}';
+    allDiv.appendChild(allCb);
+    allDiv.appendChild(allLabel);
+    panel.appendChild(allDiv);
+
+    var hr = document.createElement('hr');
+    hr.className = 'my-1';
+    panel.appendChild(hr);
+
+    // 选项列表容器
+    var listDiv = document.createElement('div');
+    listDiv.style.maxHeight = '220px';
+    listDiv.style.overflowY = 'auto';
+    listDiv.className = 'item-list';
+
+    var selectedSet = {};
+    if (preselected[level]) {
+      preselected[level].forEach(function(v) { selectedSet[v] = true; });
+    }
+
+    options.forEach(function(opt) {
+      var itemDiv = document.createElement('div');
+      itemDiv.className = 'form-check';
+
+      var cb = document.createElement('input');
+      cb.className = 'form-check-input item-cb';
+      cb.type = 'checkbox';
+      cb.value = opt;
+      cb.name = level === 'sku' ? 'sku' : 'category_' + level;
+      cb.id = level + '-' + opt.replace(/\s+/g, '_');
+      if (selectedSet[opt]) cb.checked = true;
+
+      var label = document.createElement('label');
+      label.className = 'form-check-label small';
+      label.setAttribute('for', level + '-' + opt.replace(/\s+/g, '_'));
+      if (level === 'sku' && categoryTree.sku_info && categoryTree.sku_info[opt]) {
+        label.textContent = opt + ' | ' + (categoryTree.sku_info[opt].name || '');
+      } else {
+        label.textContent = opt;
+      }
+
+      itemDiv.appendChild(cb);
+      itemDiv.appendChild(label);
+      listDiv.appendChild(itemDiv);
+    });
+
+    panel.appendChild(listDiv);
+    updateSelectAll(level);
+  }
+
+  function getCheckedValues(level) {
+    var panel = document.getElementById('panel-' + level);
+    if (!panel) return [];
+    var cbs = panel.querySelectorAll('.item-cb:checked');
+    return Array.prototype.map.call(cbs, function(cb) { return cb.value; });
+  }
+
+  function updateSelectAll(level) {
+    var allCb = document.getElementById('select-all-' + level);
+    var panel = document.getElementById('panel-' + level);
+    if (!allCb || !panel) return;
+    var items = panel.querySelectorAll('.item-cb');
+    if (items.length === 0) { allCb.checked = false; return; }
+    var checked = panel.querySelectorAll('.item-cb:checked');
+    allCb.checked = checked.length === items.length;
+    allCb.indeterminate = checked.length > 0 && checked.length < items.length;
+  }
+
+  // ========== 祖先级别映射 ==========
+  var ANCESTORS_OF = { l2: ['l1'], l3: ['l1','l2'], l4: ['l1','l2','l3'], l5: ['l1','l2','l3','l4'], sku: ['l1','l2','l3','l4','l5'] };
+  var FIELD_OF = { l1:'l1', l2:'l2', l3:'l3', l4:'l4', l5:'l5' };
+
+  // 用 sku_info 过滤 childOptions，确保每个选项都能匹配全部祖先的已选值
+  function filterByAncestorSelections(childOptions, childLevel, parentLevel) {
+    var ancestorLevels = ANCESTORS_OF[childLevel] || [];
+var allLevels = ancestorLevels.concat(parentLevel);  // 包含父级自身
+    var filters = {};
+    var hasFilter = false;
+    for (var i = 0; i < allLevels.length; i++) {
+      var lvl = allLevels[i];
+      var vals = getCheckedValues(lvl);
+      if (vals.length > 0) {
+        filters[lvl] = vals;
+        hasFilter = true;
+      }
+    }
+if (!hasFilter) return childOptions;  // 没有任何上级筛选，无需过滤
+
+    var childField = (childLevel === 'sku') ? null : FIELD_OF[childLevel];
+    var allSkus = Object.keys(categoryTree.sku_info);
+    return childOptions.filter(function(childVal) {
+      // 对于 sku 级别，childVal 本身就是物料码，只检查该条；否则遍历全部
+      var candidates = (childLevel === 'sku') ? [childVal] : allSkus;
+      for (var si = 0; si < candidates.length; si++) {
+        var info = categoryTree.sku_info[candidates[si]];
+        if (!info) continue;
+        var match = true;
+        // 检查所有祖先 + 父级的筛选值
+        for (var lvl in filters) {
+          var field = FIELD_OF[lvl];
+          if (field && filters[lvl].indexOf(info[field]) === -1) {
+            match = false;
+            break;
+          }
+        }
+        // 检查 childLevel 自身的值（sku 级别已在 candidates 中限定）
+        if (match && childField && info[childField] !== childVal) {
+          match = false;
+        }
+        if (match) return true;
+      }
+      return false;
+    });
+  }
+
+  // ========== 级联刷新逻辑 ==========
+  function refreshChildOptions(parentLevel) {
+    var childLevel = null;
+    for (var cl in PARENT_MAP) {
+      if (PARENT_MAP[cl] === parentLevel) { childLevel = cl; break; }
+    }
+    if (!childLevel) { checkBtn(); return; }
+
+    var parentChecked = getCheckedValues(parentLevel);
+    var childOptions = [];
+
+    if (parentChecked.length === 0) {
+      // 未选择任何上级 → 显示全部子级选项（后续由祖先过滤裁剪）
+      var key = LEVEL_MAP[childLevel];
+      if (key && categoryTree[key]) childOptions = categoryTree[key].slice();
+    } else {
+      // 已选择上级 → 通过映射合并所有选中上级的子级
+      var childSet = {};
+      var mapKey = CHILD_MAP[parentLevel];
+      if (mapKey && categoryTree[mapKey]) {
+        var parentMap = categoryTree[mapKey];
+        parentChecked.forEach(function(pv) {
+          var children = parentMap[pv];
+          if (children) {
+            children.forEach(function(c) { if (c) childSet[c] = true; });
+          }
+        });
+      }
+      childOptions = Object.keys(childSet).sort();
+    }
+
+    // 按祖先已选值过滤（级联链一致性校验）
+    childOptions = filterByAncestorSelections(childOptions, childLevel, parentLevel);
+
+    renderPanel(childLevel, childOptions);
+    // 继续级联到更深层
+    refreshChildOptions(childLevel);
+  }
+
+  function checkBtn() {
+    var regions = getCheckedValues('region');
+    var btn = document.getElementById('trainBtn');
+    if (btn) btn.disabled = regions.length === 0;
+  }
+
+  // ========== AJAX 表单提交 ==========
+  // 自动判断训练层级：优先 SKU → L5 → L4 → L3 → L2 → L1
+  function determineTrainingLevel() {
+    if (getCheckedValues('sku').length > 0) return 'sku';
+    if (getCheckedValues('l5').length > 0) return 'category_l5';
+    if (getCheckedValues('l4').length > 0) return 'category_l4';
+    if (getCheckedValues('l3').length > 0) return 'category_l3';
+    if (getCheckedValues('l2').length > 0) return 'category_l2';
+    return 'category_l1';
+  }
+
+  window.submitTrainForm = function() {
+    var regions = getCheckedValues('region');
+    if (regions.length === 0) {
+      showAjaxError('{% translate "请选择至少一个销售区域" %}');
+      return;
+    }
+
+    var hierarchy = determineTrainingLevel();
+
+    var formData = new FormData();
+    formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+    formData.append('hierarchy_level', hierarchy);
+    formData.append('start_date', document.getElementById('startDate').value);
+    formData.append('end_date', document.getElementById('endDate').value);
+
+    // 收集所有已选中的 region 和分类 checkbox
+    regions.forEach(function(r) { formData.append('region', r); });
+    getCheckedValues('l1').forEach(function(v) { formData.append('category_l1', v); });
+    getCheckedValues('l2').forEach(function(v) { formData.append('category_l2', v); });
+    getCheckedValues('l3').forEach(function(v) { formData.append('category_l3', v); });
+    getCheckedValues('l4').forEach(function(v) { formData.append('category_l4', v); });
+    getCheckedValues('l5').forEach(function(v) { formData.append('category_l5', v); });
+    getCheckedValues('sku').forEach(function(v) { formData.append('sku', v); });
+
+    var btn = document.getElementById('trainBtn');
+    var origText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>{% translate "训练中…" %}';
+    hideAjaxError();
+
+    fetch(document.getElementById('trainForm').action, {
+      method: 'POST',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      body: formData
+    })
+    .then(function(resp) {
+      if (!resp.ok) throw new Error('{% translate "服务器返回" %}' + resp.status);
+      return resp.json();
+    })
+    .then(function(data) {
+      if (data.success) {
+        window.location.href = data.redirect_url;
+      } else {
+        var errMsg = (data.errors || ['{% translate "未知错误" %}']).join('<br>');
+        if (data.debug) {
+          errMsg += '<br><br><small>{% translate "诊断: 区域=" %}' + JSON.stringify(data.debug.regions) +
+                    '{% translate ", 训练项目数=" %}' + data.debug.training_items_count +
+                    ', L1=' + JSON.stringify(data.debug.l1) +
+                    ', L2=' + JSON.stringify(data.debug.l2) +
+                    ', L3=' + JSON.stringify(data.debug.l3) +
+                    ', L4=' + JSON.stringify(data.debug.l4) +
+                    ', L5=' + JSON.stringify(data.debug.l5) +
+                    ', SKU=' + JSON.stringify(data.debug.skus) + '</small>';
+        }
+        showAjaxError(errMsg);
+      }
+    })
+    .catch(function(err) {
+      showAjaxError('{% translate "网络错误:" %}' + err.message);
+    })
+    .finally(function() {
+      btn.disabled = (getCheckedValues('region').length === 0);
+      btn.innerHTML = origText;
+    });
+  };
+
+  function showAjaxError(msg) {
+    var el = document.getElementById('ajaxErrors');
+    if (!el) return;
+    el.innerHTML = msg;
+    el.classList.remove('d-none');
+  }
+
+  function hideAjaxError() {
+    var el = document.getElementById('ajaxErrors');
+    if (!el) return;
+    el.classList.add('d-none');
+  }
+
+  // ========== 事件委托 ==========
+  document.addEventListener('change', function(e) {
+    var target = e.target;
+
+    if (target.classList.contains('select-all-cb')) {
+      var level = target.getAttribute('data-level');
+      var panel = document.getElementById('panel-' + level);
+      if (!panel) return;
+      var items = panel.querySelectorAll('.item-cb');
+      items.forEach(function(cb) { cb.checked = target.checked; });
+      if (level !== 'region') { refreshChildOptions(level); refreshRegionPanel(); }
+      else checkBtn();
+      return;
+    }
+
+    if (target.classList.contains('item-cb')) {
+      var panelEl = target.closest('.cascade-panel');
+      if (!panelEl) return;
+      var level = panelEl.id.replace('panel-', '');
+      updateSelectAll(level);
+      if (level !== 'region') { refreshChildOptions(level); refreshRegionPanel(); }
+      else checkBtn();
+      return;
+    }
+  });
+
+  // ========== 渲染区域面板 ==========
+  function renderRegionPanel(opts) {
+    var panel = document.getElementById('panel-region');
+    if (!panel) return;
+    var regionOptions = opts || regionList.slice();
+    // 保存已选中的区域
+    var currentChecked = {};
+    var cbs = panel.querySelectorAll('.item-cb:checked');
+    cbs.forEach(function(cb) { currentChecked[cb.value] = true; });
+    panel.innerHTML = '';
+    if (!regionOptions.length) {
+      panel.innerHTML = '<div class="text-muted small text-center">{% translate "（无可选区域—请先选产品）" %}</div>';
+      return;
+    }
+    var allDiv = document.createElement('div');
+    allDiv.className = 'form-check mb-1';
+    var allCb = document.createElement('input');
+    allCb.className = 'form-check-input select-all-cb';
+    allCb.type = 'checkbox';
+    allCb.id = 'select-all-region';
+    allCb.setAttribute('data-level', 'region');
+    var allLabel = document.createElement('label');
+    allLabel.className = 'form-check-label small fw-bold';
+    allLabel.setAttribute('for', 'select-all-region');
+    allLabel.textContent = '{% translate "全选" %}';
+    allDiv.appendChild(allCb);
+    allDiv.appendChild(allLabel);
+    panel.appendChild(allDiv);
+    var hr = document.createElement('hr'); hr.className = 'my-1'; panel.appendChild(hr);
+
+    var listDiv = document.createElement('div');
+    listDiv.style.maxHeight = '220px';
+    listDiv.style.overflowY = 'auto';
+    listDiv.className = 'item-list';
+
+    var rset = {};
+    // 保留预选区域中的值（仅首次渲染），优先保留用户已选中的
+    if (Object.keys(currentChecked).length === 0 && preselected.region) {
+      preselected.region.forEach(function(r) { rset[r] = true; });
+    }
+
+    regionOptions.forEach(function(r) {
+      var itemDiv = document.createElement('div');
+      itemDiv.className = 'form-check';
+      var cb = document.createElement('input');
+      cb.className = 'form-check-input item-cb';
+      cb.type = 'checkbox';
+      cb.value = r; cb.name = 'region';
+      cb.id = 'region-' + r;
+      if (currentChecked[r] || rset[r]) cb.checked = true;
+      var label = document.createElement('label');
+      label.className = 'form-check-label small';
+      label.setAttribute('for', 'region-' + r);
+      label.textContent = r;
+      itemDiv.appendChild(cb); itemDiv.appendChild(label);
+      listDiv.appendChild(itemDiv);
+    });
+    panel.appendChild(listDiv);
+    updateSelectAll('region');
+  }
+
+  // ── 计算可选区域：根据选中分类/SKU 查询可用区域 ──
+  function getAvailableRegions() {
+    var FIELD_OF = {
+      'l1': 'product_category_level1', 'l2': 'product_category_level2',
+      'l3': 'product_category_level3', 'l4': 'product_category_level4',
+      'l5': 'product_category_level5'
+    };
+    var matchingSkus = null;
+    var selectedSkuVals = getCheckedValues('sku');
+    if (selectedSkuVals.length > 0) {
+      matchingSkus = selectedSkuVals;
+    } else {
+      var anySelection = false;
+      var filterFields = {};
+      ['l1', 'l2', 'l3', 'l4', 'l5'].forEach(function(lv) {
+        var vals = getCheckedValues(lv);
+        if (vals.length > 0) { anySelection = true; filterFields[FIELD_OF[lv]] = vals; }
+      });
+      if (anySelection) {
+        matchingSkus = [];
+        var allSkus = Object.keys(categoryTree.sku_info);
+        allSkus.forEach(function(sku) {
+          var info = categoryTree.sku_info[sku];
+          if (!info) return;
+          var match = true;
+          for (var field in filterFields) {
+            if (filterFields[field].indexOf(info[field]) === -1) { match = false; break; }
+          }
+          if (match) matchingSkus.push(sku);
+        });
+      }
+    }
+    if (matchingSkus === null || matchingSkus.length === 0) return regionList.slice();
+    var regionSet = {};
+    matchingSkus.forEach(function(sku) {
+      var regions = skuRegionsMap[sku];
+      if (regions) regions.forEach(function(r) { regionSet[r] = true; });
+    });
+    var available = Object.keys(regionSet).sort();
+    return available.length > 0 ? available : regionList.slice();
+  }
+
+  function refreshRegionPanel() {
+    renderRegionPanel(getAvailableRegions());
+    checkBtn();
+  }
+
+  // ========== 初始渲染 ==========
+  renderPanel('l1', categoryTree.all_l1 || []);
+  renderRegionPanel();
+  // 级联展开：从 L1 往下逐级渲染 L2→L3→L4→L5→SKU
+  // 未选择 L1 时显示全部子级选项，已选择则按父子关系过滤
+  refreshChildOptions('l1');
+})();
+</script>
+
+<style>
+.cascade-panel { min-height: 100px; }
+.cascade-panel .item-list { font-size: 0.85rem; }
+.cascade-panel .form-check { margin-bottom: 0; }
+.cascade-panel .form-check-input { margin-top: 0.3rem; }
+</style>
+{% endblock %}

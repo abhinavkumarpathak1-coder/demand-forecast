@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y gettext
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Django system check
+        env:
+          DJANGO_SECRET_KEY: ci-only-secret-key
+          DJANGO_DEBUG: "False"
+        run: python manage.py check --fail-level=WARNING
+
+      - name: Missing migrations check
+        run: python manage.py makemigrations --check --dry-run
+
+      - name: Compile translation catalogs
+        run: python manage.py compilemessages
+
+      - name: Run tests
+        run: python manage.py test --noinput

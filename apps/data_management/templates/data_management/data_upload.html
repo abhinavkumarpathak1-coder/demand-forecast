@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block content %}
+<div class="page-container">
+
+    <!-- 模板下载 -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card card-hover h-100">
+                <div class="card-header bg-primary-subtle">
+                    <div class="d-flex align-items-center">
+                        <span class="icon-circle-sm bg-primary-subtle text-primary me-2">
+                            <i class="bi bi-cart3"></i>
+                        </span>
+                        <span class="fw-semibold">{% translate "销售数据模板" %}</span>
+                    </div>
+                </div>
+                <div class="card-body d-flex flex-column">
+                    <p class="text-muted small flex-grow-1">{% translate "包含销售区域、产品分类、物料号、物料名称、日期、销量。每行表示一条日期的销量记录。" %}</p>
+                    <a href="{% url 'data:download_sales_template' %}" class="btn btn-outline-dark btn-sm align-self-start">
+                        <i class="bi bi-download me-1"></i>{% translate "下载销售模板" %}
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card card-hover h-100">
+                <div class="card-header bg-primary-subtle">
+                    <div class="d-flex align-items-center">
+                        <span class="icon-circle-sm bg-primary-subtle text-primary me-2">
+                            <i class="bi bi-tag"></i>
+                        </span>
+                        <span class="fw-semibold">{% translate "促销数据模板" %}</span>
+                    </div>
+                </div>
+                <div class="card-body d-flex flex-column">
+                    <p class="text-muted small flex-grow-1">{% translate "包含销售区域、产品分类、物料号、物料名称、日期、促销力度、开始/结束日期。" %}</p>
+                    <a href="{% url 'data:download_promotion_template' %}" class="btn btn-outline-dark btn-sm align-self-start">
+                        <i class="bi bi-download me-1"></i>{% translate "下载促销模板" %}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 上传表单 -->
+    <div class="card card-hover mb-4">
+        <div class="card-header bg-primary-subtle">
+            <div class="d-flex align-items-center">
+                <span class="icon-circle-sm bg-primary-subtle text-primary me-2">
+                    <i class="bi bi-upload"></i>
+                </span>
+                <span class="fw-semibold">{% translate "上传文件" %}</span>
+            </div>
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-medium text-muted">
+                            <i class="bi bi-database me-1"></i>{% translate "销售数据" %}
+                        </label>
+                        <p class="small text-muted mb-2">{% translate "包含销售区域、产品分类、物料信息、物料号、物料名称、日期、销量。请确保日期格式为 YYYY-MM-DD，销量为数字。每行表示一条日期的销量记录（长表格）。" %}</p>
+                        <input type="file" class="form-control" name="sales_file" accept=".xlsx,.xls">
+                        <div class="form-text">{% translate "支持Excel格式，文件大小不超过10MB" %}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-medium text-muted">
+                            <i class="bi bi-tags me-1"></i>{% translate "促销数据" %}
+                        </label>
+                        <p class="small text-muted mb-2">{% translate "包含销售区域、产品分类、物料信息、物料号、物料名称、日期、促销力度、促销开始日期、促销结束日期。请确保日期格式为 YYYY-MM-DD，促销力度为数字，开始/结束日期为有效日期。" %}</p>
+                        <input type="file" class="form-control" name="promotion_file" accept=".xlsx,.xls">
+                        <div class="form-text">{% translate "支持Excel格式，文件大小不超过10MB" %}</div>
+                    </div>
+                </div>
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4 pt-3 border-top">
+                    <button type="submit" class="btn btn-dark">
+                        <i class="bi bi-upload me-1"></i>{% translate "上传数据" %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 查看数据 -->
+    <div class="card card-hover">
+        <div class="card-header bg-primary-subtle">
+            <div class="d-flex align-items-center">
+                <span class="icon-circle-sm bg-primary-subtle text-primary me-2">
+                    <i class="bi bi-table"></i>
+                </span>
+                <span class="fw-semibold">{% translate "已有数据" %}</span>
+            </div>
+        </div>
+        <div class="card-body p-4 d-flex justify-content-between align-items-center">
+            <span class="text-muted small">{% translate "浏览、筛选和导出已上传的全部销售数据与促销数据" %}</span>
+            <a href="{% url 'data:view_data' %}" class="btn btn-outline-dark btn-sm">
+                <i class="bi bi-arrow-right me-1"></i>{% translate "查看数据" %}
+            </a>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

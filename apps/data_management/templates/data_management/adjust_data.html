@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+{% load i18n i18n_dates %}
+{% block content %}
+<div class="page-container">
+
+    <!-- 页面标题 -->
+    <div class="page-header d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="page-title"><i class="bi bi-pencil-square me-2"></i>{% translate "数据调整" %}</h4>
+            <p class="page-desc mb-0">{% translate "快速调整最近的销售和促销记录，支持保存与删除操作" %}</p>
+        </div>
+        <a href="{% url 'data:view_data' %}" class="btn btn-outline-dark btn-sm">
+            <i class="bi bi-arrow-left me-1"></i>{% translate "返回查看" %}
+        </a>
+    </div>
+
+    <!-- 销售数据 -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary-subtle d-flex align-items-center py-3">
+            <span class="icon-circle-sm bg-primary-subtle text-primary me-2">
+                <i class="bi bi-cart3"></i>
+            </span>
+            <h6 class="mb-0 fw-semibold">{% translate "销售数据" %}</h6>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">{% translate "日期" %}</th>
+                            <th>{% translate "区域" %}</th>
+                            <th>{% translate "物料号" %}</th>
+                            <th>{% translate "物料名称" %}</th>
+                            <th style="width:140px">{% translate "销量" %}</th>
+                            <th class="pe-4" style="width:150px">{% translate "操作" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in sales_data %}
+                        <tr>
+                            <td class="ps-4 text-nowrap">{{ item.date|localize_date }}</td>
+                            <td>{{ item.sales_region_code }}</td>
+                            <td class="font-monospace small">{{ item.product_data.material_number }}</td>
+                            <td>{{ item.product_data.material_name }}</td>
+                            <td>
+                                <input type="number" step="0.01" class="form-control form-control-sm" id="sales-qty-{{ item.id }}" value="{{ item.sales_quantity }}">
+                            </td>
+                            <td class="pe-4">
+                                <div class="d-flex gap-1">
+                                    <button class="btn btn-outline-dark btn-sm" onclick="updateSales({{ item.id }})">{% translate "保存" %}</button>
+                                    <button class="btn btn-outline-danger btn-sm" onclick="deleteRecord({{ item.id }}, 'delete_sales')">{% translate "删除" %}</button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">{% translate "暂无销售数据" %}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% if sales_data.has_other_pages %}
+            <div class="border-top px-4 py-3">
+                <nav>
+                    <ul class="pagination pagination-sm justify-content-center mb-0">
+                        {% if sales_data.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?sales_page={{ sales_data.previous_page_number }}&promo_page={{ promotion_data.number }}">{% translate "上一页" %}</a>
+                        </li>
+                        {% endif %}
+                        {% for i in sales_page_numbers %}
+                            <li class="page-item {% if sales_data.number == i %}active{% endif %}">
+                                <a class="page-link" href="?sales_page={{ i }}&promo_page={{ promotion_data.number }}">{{ i }}</a>
+                            </li>
+                        {% endfor %}
+                        {% if sales_data.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?sales_page={{ sales_data.next_page_number }}&promo_page={{ promotion_data.number }}">{% translate "下一页" %}</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 促销数据 -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary-subtle d-flex align-items-center py-3">
+            <span class="icon-circle-sm bg-primary-subtle text-primary me-2">
+                <i class="bi bi-tag"></i>
+            </span>
+            <h6 class="mb-0 fw-semibold">{% translate "促销数据" %}</h6>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">{% translate "日期" %}</th>
+                            <th>{% translate "区域" %}</th>
+                            <th>{% translate "物料号" %}</th>
+                            <th>{% translate "物料名称" %}</th>
+                            <th style="width:120px">{% translate "促销力度" %}</th>
+                            <th style="width:130px">{% translate "开始" %}</th>
+                            <th style="width:130px">{% translate "结束" %}</th>
+                            <th class="pe-4" style="width:150px">{% translate "操作" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in promotion_data %}
+                        <tr>
+                            <td class="ps-4 text-nowrap">{{ item.date|localize_date }}</td>
+                            <td>{{ item.sales_region_code }}</td>
+                            <td class="font-monospace small">{{ item.product_data.material_number }}</td>
+                            <td>{{ item.product_data.material_name }}</td>
+                            <td>
+                                <input type="number" step="0.01" class="form-control form-control-sm" id="promo-strength-{{ item.id }}" value="{{ item.promotion_strength|default_if_none:"" }}">
+                            </td>
+                            <td>
+                                <input type="date" class="form-control form-control-sm" id="promo-start-{{ item.id }}" value="{{ item.promotion_start_date|date:'Y-m-d' }}">
+                            </td>
+                            <td>
+                                <input type="date" class="form-control form-control-sm" id="promo-end-{{ item.id }}" value="{{ item.promotion_end_date|date:'Y-m-d' }}">
+                            </td>
+                            <td class="pe-4">
+                                <div class="d-flex gap-1">
+                                    <button class="btn btn-outline-dark btn-sm" onclick="updatePromotion({{ item.id }})">{% translate "保存" %}</button>
+                                    <button class="btn btn-outline-danger btn-sm" onclick="deleteRecord({{ item.id }}, 'delete_promotion')">{% translate "删除" %}</button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center py-5 text-muted">{% translate "暂无促销数据" %}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% if promotion_data.has_other_pages %}
+            <div class="border-top px-4 py-3">
+                <nav>
+                    <ul class="pagination pagination-sm justify-content-center mb-0">
+                        {% if promotion_data.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?promo_page={{ promotion_data.previous_page_number }}&sales_page={{ sales_data.number }}">{% translate "上一页" %}</a>
+                        </li>
+                        {% endif %}
+                        {% for i in promo_page_numbers %}
+                            <li class="page-item {% if promotion_data.number == i %}active{% endif %}">
+                                <a class="page-link" href="?promo_page={{ i }}&sales_page={{ sales_data.number }}">{{ i }}</a>
+                            </li>
+                        {% endfor %}
+                        {% if promotion_data.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?promo_page={{ promotion_data.next_page_number }}&sales_page={{ sales_data.number }}">{% translate "下一页" %}</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+
+<form id="csrf-form" style="display:none;">{% csrf_token %}</form>
+
+{% block extra_js %}
+<script>
+function getCsrfToken() {
+    const tokenInput = document.querySelector('#csrf-form input[name="csrfmiddlewaretoken"]');
+    return tokenInput ? tokenInput.value : '';
+}
+
+function fetchJson(action, payload) {
+    return fetch('{% url "data:adjust_data" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrfToken(),
+        },
+        body: JSON.stringify(Object.assign({ action: action }, payload)),
+    }).then(response => response.json());
+}
+
+function updateSales(id) {
+    const qty = document.getElementById(`sales-qty-${id}`).value;
+    fetchJson('update_sales', { id: id, quantity: parseFloat(qty) || 0 })
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert(data.message || '{% translate "保存失败" %}');
+            }
+        });
+}
+
+function updatePromotion(id) {
+    const strength = document.getElementById(`promo-strength-${id}`).value;
+    const startDate = document.getElementById(`promo-start-${id}`).value;
+    const endDate = document.getElementById(`promo-end-${id}`).value;
+    fetchJson('update_promotion', {
+        id: id,
+        promotion_strength: strength ? parseFloat(strength) : null,
+        promotion_start_date: startDate || null,
+        promotion_end_date: endDate || null,
+    }).then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.message || '{% translate "保存失败" %}');
+        }
+    });
+}
+
+function deleteRecord(id, action) {
+    if (!confirm('{% translate "确认删除此记录吗？" %}')) {
+        return;
+    }
+    fetchJson(action, { id: id }).then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.message || '{% translate "删除失败" %}');
+        }
+    });
+}
+</script>
+{% endblock %}
+{% endblock %}

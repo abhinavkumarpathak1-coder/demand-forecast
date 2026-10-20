@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="d-flex flex-column justify-content-center align-items-center" style="min-height: 70vh;">
+    <h1 class="text-center">{% translate "欢迎使用需求预测系统" %}</h1>
+    <p class="text-center text-muted">{% translate "请使用左侧菜单访问数据管理、模型训练和需求预测模块。" %}</p>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    #mainFooter { margin-top: auto !important; }
+</style>
+{% endblock %}

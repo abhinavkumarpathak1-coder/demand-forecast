@@ -1,0 +1,704 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+{% block title %}{% translate "需求预测" %}{% endblock %}
+{% block content %}
+<div class="page-container">
+  <h4 class="mb-3">{% translate "需求预测" %}</h4>
+
+  {% if messages %}
+    {% for msg in messages %}
+      <div class="alert alert-{{ msg.tags|default:'info' }} alert-dismissible fade show">{{ msg }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <form method="post" id="forecastForm">
+    {% csrf_token %}
+
+    <!-- ───────── 筛选条件 ───────── -->
+    <div class="card mb-3">
+      <div class="card-header"><strong>{% translate "筛选条件" %}</strong></div>
+      <div class="card-body">
+        <!-- 分类级联 -->
+        <div class="row g-3 mb-3">
+          <div class="col-md-2">
+            <label class="form-label fw-bold">{% translate "产品一级分类" %}</label>
+            <div class="cascade-panel border rounded p-2" id="panel-l1"></div>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label fw-bold">{% translate "产品二级分类" %}</label>
+            <div class="cascade-panel border rounded p-2" id="panel-l2"></div>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label fw-bold">{% translate "产品三级分类" %}</label>
+            <div class="cascade-panel border rounded p-2" id="panel-l3"></div>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label fw-bold">{% translate "产品四级分类" %}</label>
+            <div class="cascade-panel border rounded p-2" id="panel-l4"></div>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label fw-bold">{% translate "产品五级分类" %}</label>
+            <div class="cascade-panel border rounded p-2" id="panel-l5"></div>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label fw-bold">SKU</label>
+            <div class="cascade-panel border rounded p-2" id="panel-sku"></div>
+          </div>
+        </div>
+        <div class="text-muted small mb-2">{% translate "提示: 未勾选的分类层级将自动视为全选" %}</div>
+        <!-- 区域 + 日期 + 预测周期 -->
+        <div class="row g-3 align-items-start">
+          <div class="col-md-6">
+            <label class="form-label fw-bold">{% translate "销售区域" %}</label>
+            <div class="cascade-panel border rounded p-2" id="panel-region"></div>
+          </div>
+          <div class="col-md-3">
+            <label for="startDate" class="form-label fw-bold">{% translate "开始日期" %}</label>
+            <input type="month" class="form-control mb-2" id="startDate" name="start_date"
+                   value="{{ default_start_date }}">
+            <label for="endDate" class="form-label fw-bold">{% translate "结束日期" %}</label>
+            <input type="month" class="form-control" id="endDate" name="end_date"
+                   value="{{ default_end_date }}">
+          </div>
+          <div class="col-md-3">
+            <label for="forecastPeriod" class="form-label fw-bold">{% translate "预测周期(月)" %}</label>
+            <input type="number" class="form-control mb-3" id="forecastPeriod" name="forecast_period"
+                   min="1" max="24" value="12">
+            <button type="button" class="btn btn-primary w-100" id="forecastBtn" disabled
+                    onclick="submitForecastForm()">
+              <i class="bi bi-graph-up"></i> {% translate "开始预测" %}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+
+  <!-- ───────── 选择模型 ───────── -->
+  <div class="card mb-3">
+    <div class="card-header"><strong>{% translate "选择模型" %}</strong></div>
+    <div class="card-body p-0">
+      <div class="p-2">
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="radio" name="model_mode" id="modeAuto" value="auto" checked>
+          <label class="form-check-label small" for="modeAuto">{% translate "自动匹配" %}</label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="radio" name="model_mode" id="modeSelect" value="select">
+          <label class="form-check-label small" for="modeSelect">{% translate "手动选择" %}</label>
+        </div>
+      </div>
+      <div class="d-none" id="modelSelectPanel">
+      <div class="d-flex align-items-center justify-content-between p-2 border-bottom">
+        <span class="small text-muted" id="modelCount"></span>
+        <button class="btn btn-sm btn-outline-secondary" id="refreshModelsBtn" type="button" title="{% translate '刷新模型列表' %}">
+          <i class="bi bi-arrow-clockwise"></i> {% translate "刷新" %}
+        </button>
+      </div>
+      <div class="table-responsive" id="modelTableWrapper"{% if not recent_models %} style="display:none;"{% endif %}>
+      <table class="table table-hover mb-0" id="modelTable">
+        <thead><tr>
+          <th>{% translate "选择" %}</th><th>{% translate "模型名称" %}</th><th>{% translate "适用区域" %}</th><th>{% translate "适用SKU" %}</th><th>{% translate "层级" %}</th><th>{% translate "训练时间" %}</th>
+        </tr></thead>
+        <tbody id="modelTableBody">
+        </tbody>
+      </table>
+      </div>
+      <div class="p-3 text-muted" id="noModelsMsg"{% if recent_models %} style="display:none;"{% endif %}>{% translate "暂无已训练模型，将自动触发模型训练" %}</div>
+      <!-- 分页控件 -->
+      <div class="d-flex align-items-center justify-content-between p-2 border-top" id="modelPagination"{% if not recent_models %} style="display:none;"{% endif %}>
+        <div class="d-flex align-items-center gap-1">
+          <button class="btn btn-sm btn-outline-secondary" id="pageFirst" title="{% translate '第一页' %}">&laquo;</button>
+          <button class="btn btn-sm btn-outline-secondary" id="pagePrev" title="{% translate '上一页' %}">&lsaquo;</button>
+          <span class="px-2 small text-nowrap">
+            <span id="pageInfo">1/1</span>
+          </span>
+          <button class="btn btn-sm btn-outline-secondary" id="pageNext" title="{% translate '下一页' %}">&rsaquo;</button>
+          <button class="btn btn-sm btn-outline-secondary" id="pageLast" title="{% translate '最后一页' %}">&raquo;</button>
+        </div>
+        <div class="d-flex align-items-center gap-1">
+          <span class="small text-muted">{% translate "跳至" %}</span>
+          <input type="number" class="form-control form-control-sm" id="pageJumpInput"
+                 style="width:60px" min="1" value="1">
+          <button class="btn btn-sm btn-outline-secondary" id="pageJumpBtn">GO</button>
+        </div>
+      </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ───────── JSON 数据桥梁 ───────── -->
+{{ category_tree|json_script:"categoryTreeData" }}
+{{ regions_list|json_script:"regionsData" }}
+{{ sku_regions_map|json_script:"skuRegionsMapData" }}
+{{ recent_models|json_script:"recentModelsData" }}
+<script>var refreshModelsUrl = "{% url 'forecast:refresh_models' %}";</script>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+  var categoryTree, regionList = [], skuRegionsMap = {};
+
+  try {
+    var el = document.getElementById('categoryTreeData');
+    if (el) categoryTree = JSON.parse(el.textContent);
+  } catch(e) { console.error('{% translate "解析分类树失败" %}', e); }
+
+  try {
+    var rel = document.getElementById('regionsData');
+    if (rel) regionList = JSON.parse(rel.textContent);
+  } catch(e) { console.error('{% translate "解析区域数据失败" %}', e); }
+
+  try {
+    var srm = document.getElementById('skuRegionsMapData');
+    if (srm) skuRegionsMap = JSON.parse(srm.textContent);
+  } catch(e) { console.error('{% translate "解析SKU区域映射失败" %}', e); }
+
+  if (!categoryTree) return;
+
+  var LEVEL_MAP  = { l1:'all_l1', l2:'all_l2', l3:'all_l3', l4:'all_l4', l5:'all_l5', sku:'all_skus' };
+  var PARENT_MAP = { l2:'l1', l3:'l2', l4:'l3', l5:'l4', sku:'l5' };
+  var CHILD_MAP  = { l1:'l1_to_l2', l2:'l2_to_l3', l3:'l3_to_l4', l4:'l4_to_l5', l5:'l5_to_sku' };
+
+  // ========== 祖先级别映射 ==========
+  var ANCESTORS_OF = { l2: ['l1'], l3: ['l1','l2'], l4: ['l1','l2','l3'], l5: ['l1','l2','l3','l4'], sku: ['l1','l2','l3','l4','l5'] };
+  var FIELD_OF = { l1:'l1', l2:'l2', l3:'l3', l4:'l4', l5:'l5' };
+
+  function renderPanel(level, options) {
+    var panel = document.getElementById('panel-' + level);
+    if (!panel) return;
+    panel.innerHTML = '';
+    if (!options || options.length === 0) {
+      panel.innerHTML = '<div class="text-muted small text-center">{% translate "（无）" %}</div>';
+      return;
+    }
+    var allDiv = document.createElement('div');
+    allDiv.className = 'form-check mb-1';
+    var allCb = document.createElement('input');
+    allCb.className = 'form-check-input select-all-cb';
+    allCb.type = 'checkbox';
+    allCb.id = 'select-all-' + level;
+    allCb.setAttribute('data-level', level);
+    var allLabel = document.createElement('label');
+    allLabel.className = 'form-check-label small fw-bold';
+    allLabel.setAttribute('for', 'select-all-' + level);
+    allLabel.textContent = '{% translate "全选" %}';
+    allDiv.appendChild(allCb); allDiv.appendChild(allLabel);
+    panel.appendChild(allDiv);
+    var hr = document.createElement('hr'); hr.className = 'my-1'; panel.appendChild(hr);
+
+    var listDiv = document.createElement('div');
+    listDiv.style.maxHeight = '200px'; listDiv.style.overflowY = 'auto';
+    listDiv.className = 'item-list';
+
+    options.forEach(function(opt) {
+      var itemDiv = document.createElement('div');
+      itemDiv.className = 'form-check';
+      var cb = document.createElement('input');
+      cb.className = 'form-check-input item-cb';
+      cb.type = 'checkbox';
+      cb.value = opt;
+      cb.name = level === 'sku' ? 'sku' : 'category_' + level;
+      cb.id = level + '-' + opt.replace(/\s+/g, '_');
+      var label = document.createElement('label');
+      label.className = 'form-check-label small';
+      label.setAttribute('for', level + '-' + opt.replace(/\s+/g, '_'));
+      if (level === 'sku' && categoryTree.sku_info && categoryTree.sku_info[opt]) {
+        label.textContent = opt + ' | ' + (categoryTree.sku_info[opt].name || '');
+      } else {
+        label.textContent = opt;
+      }
+      itemDiv.appendChild(cb); itemDiv.appendChild(label);
+      listDiv.appendChild(itemDiv);
+    });
+    panel.appendChild(listDiv);
+    updateSelectAll(level);
+  }
+
+  function getCheckedValues(level) {
+    var panel = document.getElementById('panel-' + level);
+    if (!panel) return [];
+    var cbs = panel.querySelectorAll('.item-cb:checked');
+    return Array.prototype.map.call(cbs, function(cb) { return cb.value; });
+  }
+
+  function updateSelectAll(level) {
+    var allCb = document.getElementById('select-all-' + level);
+    var panel = document.getElementById('panel-' + level);
+    if (!allCb || !panel) return;
+    var items = panel.querySelectorAll('.item-cb');
+    if (items.length === 0) { allCb.checked = false; return; }
+    var checked = panel.querySelectorAll('.item-cb:checked');
+    allCb.checked = checked.length === items.length;
+    allCb.indeterminate = checked.length > 0 && checked.length < items.length;
+  }
+
+  // 用 sku_info 过滤 childOptions，确保每个选项都能匹配全部祖先的已选值
+  function filterByAncestorSelections(childOptions, childLevel, parentLevel) {
+    var ancestorLevels = ANCESTORS_OF[childLevel] || [];
+    var allLevels = ancestorLevels.concat(parentLevel);
+    var filters = {};
+    var hasFilter = false;
+    for (var i = 0; i < allLevels.length; i++) {
+      var lvl = allLevels[i];
+      var vals = getCheckedValues(lvl);
+      if (vals.length > 0) {
+        filters[lvl] = vals;
+        hasFilter = true;
+      }
+    }
+    if (!hasFilter) return childOptions;
+
+    var childField = (childLevel === 'sku') ? null : FIELD_OF[childLevel];
+    var allSkus = Object.keys(categoryTree.sku_info);
+    return childOptions.filter(function(childVal) {
+      var candidates = (childLevel === 'sku') ? [childVal] : allSkus;
+      for (var si = 0; si < candidates.length; si++) {
+        var info = categoryTree.sku_info[candidates[si]];
+        if (!info) continue;
+        var match = true;
+        for (var lvl in filters) {
+          var field = FIELD_OF[lvl];
+          if (field && filters[lvl].indexOf(info[field]) === -1) {
+            match = false;
+            break;
+          }
+        }
+        if (match && childField && info[childField] !== childVal) {
+          match = false;
+        }
+        if (match) return true;
+      }
+      return false;
+    });
+  }
+
+  function refreshChildOptions(parentLevel) {
+    var childLevel = null;
+    for (var cl in PARENT_MAP) {
+      if (PARENT_MAP[cl] === parentLevel) { childLevel = cl; break; }
+    }
+    if (!childLevel) { checkBtn(); return; }
+
+    var parentChecked = getCheckedValues(parentLevel);
+    var childOptions = [];
+
+    if (parentChecked.length === 0) {
+      // 未选择任何上级 → 显示全部子级选项（后续由祖先过滤裁剪）
+      var key = LEVEL_MAP[childLevel];
+      if (key && categoryTree[key]) childOptions = categoryTree[key].slice();
+    } else {
+      // 已选择上级 → 通过映射合并所有选中上级的子级
+      var childSet = {};
+      var mapKey = CHILD_MAP[parentLevel];
+      if (mapKey && categoryTree[mapKey]) {
+        var parentMap = categoryTree[mapKey];
+        parentChecked.forEach(function(pv) {
+          var children = parentMap[pv];
+          if (children) children.forEach(function(c) { if (c) childSet[c] = true; });
+        });
+      }
+      childOptions = Object.keys(childSet).sort();
+    }
+
+    // 按祖先已选值过滤（级联链一致性校验）
+    childOptions = filterByAncestorSelections(childOptions, childLevel, parentLevel);
+
+    renderPanel(childLevel, childOptions);
+    refreshChildOptions(childLevel);
+  }
+
+  function checkBtn() {
+    var regions = getCheckedValues('region');
+    var btn = document.getElementById('forecastBtn');
+    if (btn) btn.disabled = regions.length === 0;
+  }
+
+  // ========== 模型模式切换 ==========
+  document.addEventListener('change', function(e) {
+    if (e.target.name === 'model_mode') {
+      var panel = document.getElementById('modelSelectPanel');
+      if (panel) panel.classList.toggle('d-none', e.target.value !== 'select');
+      if (e.target.value === 'select') initModelPagination();
+    }
+  });
+
+  // ========== 模型列表分页 ==========
+  var MODEL_PAGE_SIZE = 10;
+  var allModels = [];
+  var currentPage = 1;
+  var totalPages = 1;
+
+  function loadModelData() {
+    var el = document.getElementById('recentModelsData');
+    if (!el || !el.textContent) return [];
+    try {
+      return JSON.parse(el.textContent);
+    } catch(e) {
+      return [];
+    }
+  }
+
+  function initModelPagination() {
+    allModels = loadModelData();
+    totalPages = Math.max(1, Math.ceil(allModels.length / MODEL_PAGE_SIZE));
+    currentPage = 1;
+    renderModelPage();
+    updatePaginationUI();
+    updateModelCount();
+  }
+
+  function renderModelPage() {
+    var tbody = document.getElementById('modelTableBody');
+    if (!tbody) return;
+    var start = (currentPage - 1) * MODEL_PAGE_SIZE;
+    var pageModels = allModels.slice(start, start + MODEL_PAGE_SIZE);
+    var html = '';
+    for (var i = 0; i < pageModels.length; i++) {
+      var m = pageModels[i];
+      html += '<tr>';
+      html += '<td><input type="radio" name="selected_model_id" value="' + m.id + '" class="model-radio"></td>';
+      html += '<td class="small">' + escapeHtml(m.display_name || m.model_name) + '</td>';
+      html += '<td class="small">' + escapeHtml(m.region_label || m.sales_region_code) + '</td>';
+      html += '<td class="small">' + escapeHtml(m.sku_label || m.material_number) + '</td>';
+      html += '<td class="small">' + escapeHtml(hierarchyLabel(m.hierarchy_level || 'sku')) + '</td>';
+      html += '<td class="small">' + escapeHtml(m.created_at || '') + '</td>';
+      html += '</tr>';
+    }
+    tbody.innerHTML = html;
+  }
+
+  function updatePaginationUI() {
+    var pageInfo = document.getElementById('pageInfo');
+    var pageJumpInput = document.getElementById('pageJumpInput');
+    var pageFirst = document.getElementById('pageFirst');
+    var pagePrev = document.getElementById('pagePrev');
+    var pageNext = document.getElementById('pageNext');
+    var pageLast = document.getElementById('pageLast');
+    if (!pageInfo || !pageFirst) return;
+    pageInfo.textContent = currentPage + '/' + totalPages;
+    pageJumpInput.value = currentPage;
+    pageJumpInput.max = totalPages;
+    pageFirst.disabled = currentPage <= 1;
+    pagePrev.disabled = currentPage <= 1;
+    pageNext.disabled = currentPage >= totalPages;
+    pageLast.disabled = currentPage >= totalPages;
+  }
+
+  function updateModelCount() {
+    var el = document.getElementById('modelCount');
+    if (el) el.textContent = '{% translate "共" %}' + allModels.length + '{% translate "个模型" %}';
+  }
+
+  function refreshModelList() {
+    var btn = document.getElementById('refreshModelsBtn');
+    if (!btn) return;
+    var orig = btn.innerHTML;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>{% translate "刷新中…" %}';
+    btn.disabled = true;
+    fetch(refreshModelsUrl, {
+      method: 'GET',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(function(resp) { return resp.json(); })
+    .then(function(data) {
+      if (data.success) {
+        allModels = data.models;
+        // 同步更新 DOM 数据源（供重新打开时使用）
+        var span = document.getElementById('recentModelsData');
+        if (span) span.textContent = JSON.stringify(allModels);
+        totalPages = Math.max(1, Math.ceil(allModels.length / MODEL_PAGE_SIZE));
+        currentPage = 1;
+        // 根据模型数量显示/隐藏表格和无模型提示
+        var wrapper = document.getElementById('modelTableWrapper');
+        var noMsg = document.getElementById('noModelsMsg');
+        var pagContainer = document.getElementById('modelPagination');
+        if (allModels.length > 0) {
+          if (wrapper) wrapper.style.display = '';
+          if (noMsg) noMsg.style.display = 'none';
+          if (pagContainer) pagContainer.style.display = '';
+          renderModelPage();
+          updatePaginationUI();
+        } else {
+          if (wrapper) wrapper.style.display = 'none';
+          if (noMsg) noMsg.style.display = '';
+          if (pagContainer) pagContainer.style.display = 'none';
+        }
+        updateModelCount();
+      } else {
+        alert('{% translate "刷新失败" %}');
+      }
+    })
+    .catch(function(err) {
+      alert('{% translate "刷新失败:" %}' + err.message);
+    })
+    .finally(function() {
+      btn.innerHTML = orig;
+      btn.disabled = false;
+    });
+  }
+
+  function goToPage(page) {
+    page = Math.max(1, Math.min(totalPages, page));
+    if (page === currentPage) return;
+    currentPage = page;
+    renderModelPage();
+    updatePaginationUI();
+  }
+
+  function bindPagination() {
+    var firstBtn = document.getElementById('pageFirst');
+if (!firstBtn) return;  // 无模型时元素不存在
+    firstBtn.addEventListener('click', function() { goToPage(1); });
+    document.getElementById('pagePrev').addEventListener('click', function() { goToPage(currentPage - 1); });
+    document.getElementById('pageNext').addEventListener('click', function() { goToPage(currentPage + 1); });
+    document.getElementById('pageLast').addEventListener('click', function() { goToPage(totalPages); });
+    document.getElementById('pageJumpBtn').addEventListener('click', function() {
+      var p = parseInt(document.getElementById('pageJumpInput').value, 10);
+      if (!isNaN(p)) goToPage(p);
+    });
+    document.getElementById('pageJumpInput').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        var p = parseInt(this.value, 10);
+        if (!isNaN(p)) goToPage(p);
+      }
+    });
+    // 刷新按钮
+    var refreshBtn = document.getElementById('refreshModelsBtn');
+    if (refreshBtn) {
+      refreshBtn.addEventListener('click', refreshModelList);
+    }
+  }
+  bindPagination();
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    var div = document.createElement('div');
+    div.appendChild(document.createTextNode(str));
+    return div.innerHTML;
+  }
+
+  var HIERARCHY_LABEL = {'sku':'SKU','category_l1':'{% translate "一级" %}','category_l2':'{% translate "二级" %}',
+                         'category_l3':'{% translate "三级" %}','category_l4':'{% translate "四级" %}','category_l5':'{% translate "五级" %}'};
+  function hierarchyLabel(h) { return HIERARCHY_LABEL[h] || h; }
+
+  // 自动判断训练层级：优先 SKU → L5 → L4 → L3 → L2 → L1
+  function determineTrainingLevel() {
+    if (getCheckedValues('sku').length > 0) return 'sku';
+    if (getCheckedValues('l5').length > 0) return 'category_l5';
+    if (getCheckedValues('l4').length > 0) return 'category_l4';
+    if (getCheckedValues('l3').length > 0) return 'category_l3';
+    if (getCheckedValues('l2').length > 0) return 'category_l2';
+    return 'category_l1';
+  }
+
+  // ========== AJAX 表单提交 ==========
+  window.submitForecastForm = function() {
+    var regions = getCheckedValues('region');
+    if (regions.length === 0) {
+      alert('{% translate "请选择至少一个销售区域" %}');
+      return;
+    }
+
+    var hierarchy = determineTrainingLevel();
+
+    var formData = new FormData();
+    formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+    formData.append('start_date', document.getElementById('startDate').value);
+    formData.append('end_date', document.getElementById('endDate').value);
+    formData.append('forecast_period', document.getElementById('forecastPeriod').value);
+    formData.append('hierarchy_level', hierarchy);
+
+    // 收集所有已选中的 region 和分类 checkbox
+    regions.forEach(function(r) { formData.append('region', r); });
+    getCheckedValues('l1').forEach(function(v) { formData.append('category_l1', v); });
+    getCheckedValues('l2').forEach(function(v) { formData.append('category_l2', v); });
+    getCheckedValues('l3').forEach(function(v) { formData.append('category_l3', v); });
+    getCheckedValues('l4').forEach(function(v) { formData.append('category_l4', v); });
+    getCheckedValues('l5').forEach(function(v) { formData.append('category_l5', v); });
+    getCheckedValues('sku').forEach(function(v) { formData.append('sku', v); });
+
+    // 模型选择
+    var modeEl = document.querySelector('[name=model_mode]:checked');
+    formData.append('model_mode', modeEl ? modeEl.value : 'auto');
+    var selectedModelEl = document.querySelector('[name=selected_model_id]:checked');
+    if (selectedModelEl) formData.append('selected_model_id', selectedModelEl.value);
+
+    var btn = document.getElementById('forecastBtn');
+    var origText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>{% translate "预测中…" %}';
+
+    fetch(window.location.href, {
+      method: 'POST',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      body: formData
+    })
+    .then(function(resp) {
+      if (!resp.ok) throw new Error('{% translate "服务器返回" %}' + resp.status);
+      return resp.json();
+    })
+    .then(function(data) {
+      if (data.success) {
+        window.location.href = data.redirect_url;
+      } else {
+        var errMsg = (data.errors || ['{% translate "未知错误" %}']).join('<br>');
+        if (data.debug) {
+          errMsg += '<br><br><small>{% translate "诊断: 区域=" %}' + JSON.stringify(data.debug.regions) +
+                    ', L1=' + JSON.stringify(data.debug.l1) +
+                    ', L2=' + JSON.stringify(data.debug.l2) +
+                    ', L3=' + JSON.stringify(data.debug.l3) +
+                    ', L4=' + JSON.stringify(data.debug.l4) +
+                    ', L5=' + JSON.stringify(data.debug.l5) +
+                    ', SKU=' + JSON.stringify(data.debug.skus) + '</small>';
+        }
+        alert(errMsg);
+      }
+    })
+    .catch(function(err) {
+      alert('{% translate "网络错误:" %}' + err.message);
+    })
+    .finally(function() {
+      btn.disabled = (getCheckedValues('region').length === 0);
+      btn.innerHTML = origText;
+    });
+  };
+
+  document.addEventListener('change', function(e) {
+    var target = e.target;
+    if (target.classList.contains('select-all-cb')) {
+      var level = target.getAttribute('data-level');
+      var panel = document.getElementById('panel-' + level);
+      if (!panel) return;
+      var items = panel.querySelectorAll('.item-cb');
+      items.forEach(function(cb) { cb.checked = target.checked; });
+      if (level !== 'region') { refreshChildOptions(level); refreshRegionPanel(); }
+      else checkBtn();
+      return;
+    }
+    if (target.classList.contains('item-cb')) {
+      var panelEl = target.closest('.cascade-panel');
+      if (!panelEl) return;
+      var level = panelEl.id.replace('panel-', '');
+      updateSelectAll(level);
+      if (level !== 'region') { refreshChildOptions(level); refreshRegionPanel(); }
+      else checkBtn();
+      return;
+    }
+  });
+
+  function renderRegionPanel(opts) {
+    var panel = document.getElementById('panel-region');
+    if (!panel) return;
+    var regionOptions = opts || regionList.slice();
+    // 保存已选中的区域
+    var currentChecked = {};
+    var cbs = panel.querySelectorAll('.item-cb:checked');
+    cbs.forEach(function(cb) { currentChecked[cb.value] = true; });
+    panel.innerHTML = '';
+    if (!regionOptions.length) {
+      panel.innerHTML = '<div class="text-muted small text-center">{% translate "（无可选区域—请先选产品）" %}</div>';
+      return;
+    }
+    var allDiv = document.createElement('div');
+    allDiv.className = 'form-check mb-1';
+    var allCb = document.createElement('input');
+    allCb.className = 'form-check-input select-all-cb';
+    allCb.type = 'checkbox';
+    allCb.id = 'select-all-region';
+    allCb.setAttribute('data-level', 'region');
+    var allLabel = document.createElement('label');
+    allLabel.className = 'form-check-label small fw-bold';
+    allLabel.setAttribute('for', 'select-all-region');
+    allLabel.textContent = '{% translate "全选" %}';
+    allDiv.appendChild(allCb); allDiv.appendChild(allLabel);
+    panel.appendChild(allDiv);
+    var hr = document.createElement('hr'); hr.className = 'my-1'; panel.appendChild(hr);
+    var listDiv = document.createElement('div');
+    listDiv.style.maxHeight = '200px'; listDiv.style.overflowY = 'auto';
+    listDiv.className = 'item-list';
+    regionOptions.forEach(function(r) {
+      var itemDiv = document.createElement('div');
+      itemDiv.className = 'form-check';
+      var cb = document.createElement('input');
+      cb.className = 'form-check-input item-cb';
+      cb.type = 'checkbox';
+      cb.value = r; cb.name = 'region';
+      cb.id = 'region-' + r;
+      if (currentChecked[r]) cb.checked = true;
+      var label = document.createElement('label');
+      label.className = 'form-check-label small';
+      label.setAttribute('for', 'region-' + r);
+      label.textContent = r;
+      itemDiv.appendChild(cb); itemDiv.appendChild(label);
+      listDiv.appendChild(itemDiv);
+    });
+    panel.appendChild(listDiv);
+    updateSelectAll('region');
+  }
+
+  function getAvailableRegions() {
+    var FIELD_OF = {
+      'l1': 'product_category_level1', 'l2': 'product_category_level2',
+      'l3': 'product_category_level3', 'l4': 'product_category_level4',
+      'l5': 'product_category_level5'
+    };
+    var matchingSkus = null;
+    var selectedSkuVals = getCheckedValues('sku');
+    if (selectedSkuVals.length > 0) {
+      matchingSkus = selectedSkuVals;
+    } else {
+      var anySelection = false;
+      var filterFields = {};
+      ['l1', 'l2', 'l3', 'l4', 'l5'].forEach(function(lv) {
+        var vals = getCheckedValues(lv);
+        if (vals.length > 0) { anySelection = true; filterFields[FIELD_OF[lv]] = vals; }
+      });
+      if (anySelection) {
+        matchingSkus = [];
+        var allSkus = Object.keys(categoryTree.sku_info);
+        allSkus.forEach(function(sku) {
+          var info = categoryTree.sku_info[sku];
+          if (!info) return;
+          var match = true;
+          for (var field in filterFields) {
+            if (filterFields[field].indexOf(info[field]) === -1) { match = false; break; }
+          }
+          if (match) matchingSkus.push(sku);
+        });
+      }
+    }
+    if (matchingSkus === null || matchingSkus.length === 0) return regionList.slice();
+    var regionSet = {};
+    matchingSkus.forEach(function(sku) {
+      var regions = skuRegionsMap[sku];
+      if (regions) regions.forEach(function(r) { regionSet[r] = true; });
+    });
+    var available = Object.keys(regionSet).sort();
+    return available.length > 0 ? available : regionList.slice();
+  }
+
+  function refreshRegionPanel() {
+    renderRegionPanel(getAvailableRegions());
+    checkBtn();
+  }
+
+  renderPanel('l1', categoryTree.all_l1 || []);
+  renderRegionPanel();
+  // 级联展开：从 L1 往下逐级渲染 L2→L3→L4→L5→SKU
+  refreshChildOptions('l1');
+})();
+</script>
+
+<style>
+.cascade-panel { min-height: 100px; }
+.cascade-panel .item-list { font-size: 0.85rem; }
+.cascade-panel .form-check { margin-bottom: 0; }
+.cascade-panel .form-check-input { margin-top: 0.3rem; }
+</style>
+{% endblock %}

@@ -1,0 +1,60 @@
+name: Bug report
+description: Report a problem with the Demand Forecast System / 报告系统缺陷
+labels: ["bug"]
+body:
+  - type: markdown
+    value: |
+      Thanks for reporting a bug. Please fill in as much as you can.
+      感谢提交缺陷报告，请尽量填写完整。
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened? / 问题现象
+      description: Describe the bug and what you expected instead.
+      placeholder: Clicking "Start training" returns a 500 error ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce / 复现步骤
+      description: Numbered steps, including the page and the data used.
+      placeholder: |
+        1. Go to /model/train/
+        2. Select region 8010 and SKU 1100001158
+        3. Click "Start training"
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version / 版本
+      description: Commit hash or tag, plus Python and Django versions.
+      placeholder: main@abc1234 · Python 3.13 · Django 4.2.7
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected area / 涉及模块
+      options:
+        - Data Management / 数据管理
+        - Data Insight / 数据洞察
+        - Model Training / 模型训练
+        - Demand Forecast / 需求预测
+        - What-If / What-If 分析
+        - Language switch / 语言切换
+        - Other / 其他
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots / 日志或截图
+      description: Paste the traceback or attach a screenshot. Never include confidential data.
+      render: shell

@@ -1,0 +1,1515 @@
+# French translation of the Demand Forecast System.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: demand-forecast\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-20 14:23+0800\n"
+"PO-Revision-Date: 2026-10-20 14:13+0800\n"
+"Last-Translator: Demand Forecast System contributors\n"
+"Language-Team: French\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: apps/core/templates/core/index.html:6
+msgid "欢迎使用需求预测系统"
+msgstr "Bienvenue dans le système de prévision de la demande"
+
+#: apps/core/templates/core/index.html:7
+msgid "请使用左侧菜单访问数据管理、模型训练和需求预测模块。"
+msgstr "Utilisez le menu de gauche pour accéder aux modules Gestion des données, Entraînement du modèle et Prévision de la demande."
+"Utilisez le menu de gauche pour accéder aux modules Gestion des données, "
+"Entraînement du modèle et Prévision de la demande.Utilisez le menu de gauche "
+"pour accéder aux modules Gestion des données, Entraînement du modèle et "
+"Prévision de la demande."
+
+#: apps/core/templatetags/i18n_dates.py:55
+msgid "#year#年#month_num#月"
+msgstr "#month_name# #year#"
+
+#: apps/data_insight/templates/data_insight/index.html:8 templates/base.html:44
+msgid "数据洞察"
+msgstr "Analyse des données"
+
+#: apps/data_insight/templates/data_insight/index.html:9
+msgid "按区域和SKU维度分析销售数据，查看Top排行与销量趋势"
+msgstr "Analysez les ventes par région et par SKU : top des classements et tendances de ventes"
+"Analysez les ventes par région et par SKU : top des classements et tendances "
+"de ventesAnalysez les ventes par région et par SKU : top des classements et "
+"tendances de ventes"
+
+#: apps/data_insight/templates/data_insight/index.html:19
+#: apps/data_management/templates/data_management/view_data.html:24
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:22
+#: apps/model_training/templates/model_training/train.html:22
+msgid "筛选条件"
+msgstr "Filtres"
+
+#: apps/data_insight/templates/data_insight/index.html:26
+msgid "销售区域（可多选）"
+msgstr "Régions de vente (sélection multiple)"
+
+#: apps/data_insight/templates/data_insight/index.html:30
+#: apps/data_insight/templates/data_insight/index.html:45
+#: apps/data_insight/templates/data_insight/index.html:123
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:190
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:618
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:325
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:549
+#: apps/model_training/templates/model_training/train.html:143
+#: apps/model_training/templates/model_training/train.html:443
+msgid "全选"
+msgstr "Tout sélectionner"
+
+#: apps/data_insight/templates/data_insight/index.html:41
+msgid "物料号(SKU)（可多选）"
+msgstr "Numéro d'article (SKU) (sélection multiple)"
+
+#: apps/data_insight/templates/data_insight/index.html:56
+msgid "日期范围"
+msgstr "Plage de dates"
+
+#: apps/data_insight/templates/data_insight/index.html:57
+#: apps/data_management/templates/data_management/view_data.html:48
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:59
+#: apps/model_training/templates/model_training/train.html:59
+msgid "开始日期"
+msgstr "Date de début"
+
+#: apps/data_insight/templates/data_insight/index.html:58
+#: apps/data_management/templates/data_management/view_data.html:52
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:62
+#: apps/model_training/templates/model_training/train.html:62
+msgid "结束日期"
+msgstr "Date de fin"
+
+#: apps/data_insight/templates/data_insight/index.html:59
+msgid "查询"
+msgstr "Rechercher"
+
+#: apps/data_insight/templates/data_insight/index.html:75
+msgid "Top5 销售区域"
+msgstr "Top 5 des régions de vente"
+
+#: apps/data_insight/templates/data_insight/index.html:76
+msgid "点击查看SKU明细"
+msgstr "Cliquez pour voir le détail par SKU"
+
+#: apps/data_insight/templates/data_insight/index.html:94
+msgid "点击查看区域明细"
+msgstr "Cliquez pour voir le détail par région"
+
+#: apps/data_insight/templates/data_insight/index.html:113
+msgid "指定产品销量趋势"
+msgstr "Tendance des ventes du produit sélectionné"
+
+#: apps/data_insight/templates/data_insight/index.html:119
+msgid "选择用于趋势图的物料号"
+msgstr "Choisissez l'article à afficher sur le graphique"
+
+#: apps/data_insight/templates/data_insight/index.html:134
+msgid "时间粒度"
+msgstr "Granularité temporelle"
+
+#: apps/data_insight/templates/data_insight/index.html:136
+msgid "年度"
+msgstr "Annuelle"
+
+#: apps/data_insight/templates/data_insight/index.html:137
+msgid "季度"
+msgstr "Trimestrielle"
+
+#: apps/data_insight/templates/data_insight/index.html:138
+msgid "月度"
+msgstr "Mensuelle"
+
+#: apps/data_insight/templates/data_insight/index.html:139
+msgid "周度"
+msgstr "Hebdomadaire"
+
+#: apps/data_insight/templates/data_insight/index.html:143
+msgid "更新折线图"
+msgstr "Mettre à jour le graphique"
+
+#: apps/data_insight/templates/data_insight/index.html:159
+msgid "区域 Top5 SKU"
+msgstr "Top 5 des SKU de la région"
+
+#: apps/data_insight/templates/data_insight/index.html:176
+msgid "SKU Top5 区域"
+msgstr "Top 5 des régions du SKU"
+
+#: apps/data_insight/templates/data_insight/index.html:409
+msgid "该区域暂无SKU数据"
+msgstr "Aucune donnée SKU pour cette région"
+
+#: apps/data_insight/templates/data_insight/index.html:469
+msgid "该SKU暂无区域数据"
+msgstr "Aucune donnée de région pour ce SKU"
+
+#: apps/data_insight/templates/data_insight/index.html:472
+msgid "Top5 区域"
+msgstr "Top 5 des régions"
+
+#: apps/data_insight/templates/data_insight/index.html:577
+msgid "时间"
+msgstr "Temps"
+
+#: apps/data_insight/templates/data_insight/index.html:578
+#: apps/data_management/templates/data_management/adjust_data.html:34
+#: apps/data_management/templates/data_management/view_data.html:97
+#: apps/demand_prediction/templates/demand_prediction/results.html:231
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:161
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:732
+#: apps/model_training/templates/model_training/model_results.html:384
+msgid "销量"
+msgstr "Volume des ventes"
+
+#: apps/data_management/templates/data_management/adjust_data.html:9
+msgid "数据调整"
+msgstr "Ajustement des données"
+
+#: apps/data_management/templates/data_management/adjust_data.html:10
+msgid "快速调整最近的销售和促销记录，支持保存与删除操作"
+msgstr "Modifiez rapidement les derniers enregistrements de ventes et de promotions ; enregistrement et suppression possibles"
+"Modifiez rapidement les derniers enregistrements de ventes et de "
+"promotions ; enregistrement et suppression possiblesModifiez rapidement les "
+"derniers enregistrements de ventes et de promotions ; enregistrement et "
+"suppression possibles"
+
+#: apps/data_management/templates/data_management/adjust_data.html:13
+msgid "返回查看"
+msgstr "Retour à la consultation"
+
+#: apps/data_management/templates/data_management/adjust_data.html:23
+#: apps/data_management/templates/data_management/data_upload.html:62
+#: apps/data_management/templates/data_management/upload.html:68
+#: apps/data_management/templates/data_management/view_data.html:71
+msgid "销售数据"
+msgstr "Données de vente"
+
+#: apps/data_management/templates/data_management/adjust_data.html:30
+#: apps/data_management/templates/data_management/adjust_data.html:102
+#: apps/data_management/templates/data_management/view_data.html:85
+#: apps/data_management/templates/data_management/view_data.html:179
+#: apps/demand_prediction/templates/demand_prediction/results.html:98
+#: apps/demand_prediction/templates/demand_prediction/results.html:537
+#: apps/model_training/templates/model_training/model_results.html:100
+#: apps/model_training/templates/model_training/model_results.html:377
+msgid "日期"
+msgstr "Date"
+
+#: apps/data_management/templates/data_management/adjust_data.html:31
+#: apps/data_management/templates/data_management/adjust_data.html:103
+msgid "区域"
+msgstr "Région"
+
+#: apps/data_management/templates/data_management/adjust_data.html:32
+#: apps/data_management/templates/data_management/adjust_data.html:104
+#: apps/data_management/templates/data_management/view_data.html:39
+#: apps/data_management/templates/data_management/view_data.html:92
+#: apps/data_management/templates/data_management/view_data.html:186
+msgid "物料号"
+msgstr "N° d'article"
+
+#: apps/data_management/templates/data_management/adjust_data.html:33
+#: apps/data_management/templates/data_management/adjust_data.html:105
+#: apps/data_management/templates/data_management/view_data.html:93
+#: apps/data_management/templates/data_management/view_data.html:187
+#: apps/demand_prediction/templates/demand_prediction/results.html:86
+#: apps/demand_prediction/templates/demand_prediction/results.html:533
+#: apps/model_training/templates/model_training/model_results.html:102
+msgid "物料名称"
+msgstr "Nom de l'article"
+
+#: apps/data_management/templates/data_management/adjust_data.html:35
+#: apps/data_management/templates/data_management/adjust_data.html:109
+#: apps/data_management/templates/data_management/view_data.html:103
+#: apps/data_management/templates/data_management/view_data.html:198
+msgid "操作"
+msgstr "Actions"
+
+#: apps/data_management/templates/data_management/adjust_data.html:50
+#: apps/data_management/templates/data_management/adjust_data.html:130
+msgid "保存"
+msgstr "Enregistrer"
+
+#: apps/data_management/templates/data_management/adjust_data.html:51
+#: apps/data_management/templates/data_management/adjust_data.html:131
+msgid "删除"
+msgstr "Supprimer"
+
+#: apps/data_management/templates/data_management/adjust_data.html:57
+#: apps/data_management/templates/data_management/view_data.html:126
+msgid "暂无销售数据"
+msgstr "Aucune donnée de vente"
+
+#: apps/data_management/templates/data_management/adjust_data.html:69
+#: apps/data_management/templates/data_management/adjust_data.html:149
+#: apps/data_management/templates/data_management/view_data.html:138
+#: apps/data_management/templates/data_management/view_data.html:231
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:115
+#: apps/demand_prediction/templates/demand_prediction/results.html:146
+msgid "上一页"
+msgstr "Page précédente"
+
+#: apps/data_management/templates/data_management/adjust_data.html:79
+#: apps/data_management/templates/data_management/adjust_data.html:159
+#: apps/data_management/templates/data_management/view_data.html:148
+#: apps/data_management/templates/data_management/view_data.html:241
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:119
+#: apps/demand_prediction/templates/demand_prediction/results.html:151
+msgid "下一页"
+msgstr "Page suivante"
+
+#: apps/data_management/templates/data_management/adjust_data.html:95
+#: apps/data_management/templates/data_management/data_upload.html:70
+#: apps/data_management/templates/data_management/upload.html:75
+#: apps/data_management/templates/data_management/view_data.html:165
+msgid "促销数据"
+msgstr "Données de promotion"
+
+#: apps/data_management/templates/data_management/adjust_data.html:106
+#: apps/data_management/templates/data_management/view_data.html:190
+msgid "促销力度"
+msgstr "Intensité de la promotion"
+
+#: apps/data_management/templates/data_management/adjust_data.html:107
+msgid "开始"
+msgstr "Début"
+
+#: apps/data_management/templates/data_management/adjust_data.html:108
+msgid "结束"
+msgstr "Fin"
+
+#: apps/data_management/templates/data_management/adjust_data.html:137
+#: apps/data_management/templates/data_management/view_data.html:219
+msgid "暂无促销数据"
+msgstr "Aucune donnée de promotion"
+
+#: apps/data_management/templates/data_management/adjust_data.html:198
+#: apps/data_management/templates/data_management/adjust_data.html:216
+msgid "保存失败"
+msgstr "Échec de l'enregistrement"
+
+#: apps/data_management/templates/data_management/adjust_data.html:222
+msgid "确认删除此记录吗？"
+msgstr "Supprimer cet enregistrement ?"
+
+#: apps/data_management/templates/data_management/adjust_data.html:229
+msgid "删除失败"
+msgstr "Échec de la suppression"
+
+#: apps/data_management/templates/data_management/data_upload.html:15
+#: apps/data_management/templates/data_management/upload.html:21
+msgid "销售数据模板"
+msgstr "Modèle de données de vente"
+
+#: apps/data_management/templates/data_management/data_upload.html:19
+msgid ""
+"包含销售区域、产品分类、物料号、物料名称、日期、销量。每行表示一条日期的销量"
+"记录。"
+msgstr "Contient la région de vente, la catégorie de produit, le n° d'article, le nom de l'article, la date et le volume des ventes. Chaque ligne correspond aux ventes d'une date."
+"Contient la région de vente, la catégorie de produit, le n° d'article, le "
+"nom de l'article, la date et le volume des ventes. Chaque ligne correspond "
+"aux ventes d'une date.Contient la région de vente, la catégorie de produit, "
+"le n° d'article, le nom de l'article, la date et le volume des ventes. "
+"Chaque ligne correspond aux ventes d'une date."
+
+#: apps/data_management/templates/data_management/data_upload.html:21
+msgid "下载销售模板"
+msgstr "Télécharger le modèle de ventes"
+
+#: apps/data_management/templates/data_management/data_upload.html:33
+#: apps/data_management/templates/data_management/upload.html:39
+msgid "促销数据模板"
+msgstr "Modèle de données de promotion"
+
+#: apps/data_management/templates/data_management/data_upload.html:37
+msgid ""
+"包含销售区域、产品分类、物料号、物料名称、日期、促销力度、开始/结束日期。"
+msgstr "Contient la région de vente, la catégorie de produit, le n° d'article, le nom de l'article, la date, l'intensité de la promotion et les dates de début/fin."
+"Contient la région de vente, la catégorie de produit, le n° d'article, le "
+"nom de l'article, la date, l'intensité de la promotion et les dates de début/"
+"fin.Contient la région de vente, la catégorie de produit, le n° d'article, "
+"le nom de l'article, la date, l'intensité de la promotion et les dates de "
+"début/fin."
+
+#: apps/data_management/templates/data_management/data_upload.html:39
+msgid "下载促销模板"
+msgstr "Télécharger le modèle de promotion"
+
+#: apps/data_management/templates/data_management/data_upload.html:53
+#: apps/data_management/templates/data_management/upload.html:59
+msgid "上传文件"
+msgstr "Téléverser un fichier"
+
+#: apps/data_management/templates/data_management/data_upload.html:64
+msgid ""
+"包含销售区域、产品分类、物料信息、物料号、物料名称、日期、销量。请确保日期格"
+"式为 YYYY-MM-DD，销量为数字。每行表示一条日期的销量记录（长表格）。"
+msgstr "Contient la région de vente, la catégorie, les informations article, le n°, le nom, la date et le volume des ventes. Les dates doivent être au format AAAA-MM-JJ et les volumes numériques. Chaque ligne correspond aux ventes d'une date (format long)."
+"Contient la région de vente, la catégorie, les informations article, le n°, "
+"le nom, la date et le volume des ventes. Les dates doivent être au format "
+"AAAA-MM-JJ et les volumes numériques. Chaque ligne correspond aux ventes "
+"d'une date (format long).Contient la région de vente, la catégorie, les "
+"informations article, le n°, le nom, la date et le volume des ventes. Les "
+"dates doivent être au format AAAA-MM-JJ et les volumes numériques. Chaque "
+"ligne correspond aux ventes d'une date (format long)."
+
+#: apps/data_management/templates/data_management/data_upload.html:66
+#: apps/data_management/templates/data_management/data_upload.html:74
+msgid "支持Excel格式，文件大小不超过10MB"
+msgstr "Fichiers Excel jusqu'à 10 Mo"
+
+#: apps/data_management/templates/data_management/data_upload.html:72
+msgid ""
+"包含销售区域、产品分类、物料信息、物料号、物料名称、日期、促销力度、促销开始"
+"日期、促销结束日期。请确保日期格式为 YYYY-MM-DD，促销力度为数字，开始/结束日"
+"期为有效日期。"
+msgstr "Contient la région de vente, la catégorie, les informations article, le n°, le nom, la date, l'intensité de promotion, la date de début et la date de fin de promotion. Dates au format AAAA-MM-JJ, intensité numérique et dates de début/fin valides."
+"Contient la région de vente, la catégorie, les informations article, le n°, "
+"le nom, la date, l'intensité de promotion, la date de début et la date de "
+"fin de promotion. Dates au format AAAA-MM-JJ, intensité numérique et dates "
+"de début/fin valides.Contient la région de vente, la catégorie, les "
+"informations article, le n°, le nom, la date, l'intensité de promotion, la "
+"date de début et la date de fin de promotion. Dates au format AAAA-MM-JJ, "
+"intensité numérique et dates de début/fin valides."
+
+#: apps/data_management/templates/data_management/data_upload.html:79
+#: apps/data_management/templates/data_management/upload.html:86
+msgid "上传数据"
+msgstr "Importer les données"
+
+#: apps/data_management/templates/data_management/data_upload.html:93
+msgid "已有数据"
+msgstr "Données existantes"
+
+#: apps/data_management/templates/data_management/data_upload.html:97
+msgid "浏览、筛选和导出已上传的全部销售数据与促销数据"
+msgstr "Parcourez, filtrez et exportez toutes les données de vente et de promotion importées"
+"Parcourez, filtrez et exportez toutes les données de vente et de promotion "
+"importéesParcourez, filtrez et exportez toutes les données de vente et de "
+"promotion importées"
+
+#: apps/data_management/templates/data_management/data_upload.html:99
+msgid "查看数据"
+msgstr "Consulter les données"
+
+#: apps/data_management/templates/data_management/upload.html:8
+msgid "数据上传"
+msgstr "Import de données"
+
+#: apps/data_management/templates/data_management/upload.html:9
+msgid "上传销售数据和促销数据，支持 Excel (.xlsx) 格式"
+msgstr "Importez les données de vente et de promotion au format Excel (.xlsx)"
+
+#: apps/data_management/templates/data_management/upload.html:25
+msgid "包含销售区域、产品分类、物料号、物料名称，以及 201901-202203 的月销量列"
+msgstr "Contient la région de vente, la catégorie de produit, le n° d'article, le nom de l'article et les colonnes de ventes mensuelles de 201901-202203"
+"Contient la région de vente, la catégorie de produit, le n° d'article, le "
+"nom de l'article et les colonnes de ventes mensuelles de "
+"201901-202203Contient la région de vente, la catégorie de produit, le n° "
+"d'article, le nom de l'article et les colonnes de ventes mensuelles de "
+"201901-202203"
+
+#: apps/data_management/templates/data_management/upload.html:27
+#: apps/data_management/templates/data_management/upload.html:45
+msgid "下载模板"
+msgstr "Télécharger le modèle"
+
+#: apps/data_management/templates/data_management/upload.html:43
+msgid "包含销售区域、产品分类、物料号、日期、初始价格和促销力度等字段"
+msgstr "Contient la région de vente, la catégorie de produit, le n° d'article, la date, le prix initial, l'intensité de la promotion et d'autres champs"
+"Contient la région de vente, la catégorie de produit, le n° d'article, la "
+"date, le prix initial, l'intensité de la promotion et d'autres "
+"champsContient la région de vente, la catégorie de produit, le n° d'article, "
+"la date, le prix initial, l'intensité de la promotion et d'autres champs"
+
+#: apps/data_management/templates/data_management/upload.html:71
+#: apps/data_management/templates/data_management/upload.html:78
+msgid "Excel 格式，不超过 10MB"
+msgstr "Format Excel, 10 Mo maximum"
+
+#: apps/data_management/templates/data_management/upload.html:83
+msgid "查看已有数据"
+msgstr "Consulter les données existantes"
+
+#: apps/data_management/templates/data_management/upload.html:100
+msgid "上传说明"
+msgstr "Consignes d'import"
+
+#: apps/data_management/templates/data_management/upload.html:108
+msgid "日期格式需为 YYYY-MM-DD"
+msgstr "Les dates doivent être au format AAAA-MM-JJ"
+
+#: apps/data_management/templates/data_management/upload.html:114
+msgid "销量和促销力度字段必须为数字"
+msgstr "Les champs de ventes et d'intensité de promotion doivent être numériques"
+"Les champs de ventes et d'intensité de promotion doivent être numériquesLes "
+"champs de ventes et d'intensité de promotion doivent être numériques"
+
+#: apps/data_management/templates/data_management/upload.html:120
+msgid "物料号和区域代码需与系统一致"
+msgstr "Le n° d'article et le code région doivent correspondre au système"
+
+#: apps/data_management/templates/data_management/upload.html:126
+msgid "上传后系统自动清洗并入库"
+msgstr "Les données sont nettoyées et stockées automatiquement après l'import"
+
+#: apps/data_management/templates/data_management/view_data.html:9
+msgid "数据查看与筛选"
+msgstr "Consultation et filtrage des données"
+
+#: apps/data_management/templates/data_management/view_data.html:10
+msgid "浏览和筛选已上传的销售数据与促销数据"
+msgstr "Parcourez et filtrez les données de vente et de promotion importées"
+
+#: apps/data_management/templates/data_management/view_data.html:13
+msgid "上传新数据"
+msgstr "Importer de nouvelles données"
+
+#: apps/data_management/templates/data_management/view_data.html:30
+#: apps/data_management/templates/data_management/view_data.html:91
+#: apps/data_management/templates/data_management/view_data.html:185
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:55
+#: apps/demand_prediction/templates/demand_prediction/results.html:80
+#: apps/demand_prediction/templates/demand_prediction/results.html:531
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:66
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:74
+#: apps/model_training/templates/model_training/train.html:55
+msgid "销售区域"
+msgstr "Région de vente"
+
+#: apps/data_management/templates/data_management/view_data.html:32
+msgid "全部区域"
+msgstr "Toutes les régions"
+
+#: apps/data_management/templates/data_management/view_data.html:41
+msgid "全部SKU"
+msgstr "Tous les SKU"
+
+#: apps/data_management/templates/data_management/view_data.html:57
+msgid "筛选"
+msgstr "Filtrer"
+
+#: apps/data_management/templates/data_management/view_data.html:72
+#: apps/data_management/templates/data_management/view_data.html:166
+#: apps/demand_prediction/templates/demand_prediction/results.html:374
+msgid "条"
+msgstr "lignes"
+
+#: apps/data_management/templates/data_management/view_data.html:75
+#: apps/data_management/templates/data_management/view_data.html:169
+msgid "导出"
+msgstr "Exporter"
+
+#: apps/data_management/templates/data_management/view_data.html:94
+msgid "产品分类"
+msgstr "Catégorie de produit"
+
+#: apps/data_management/templates/data_management/view_data.html:196
+msgid "促销开始"
+msgstr "Début de promotion"
+
+#: apps/data_management/templates/data_management/view_data.html:197
+msgid "促销结束"
+msgstr "Fin de promotion"
+
+#: apps/data_management/views.py:113
+msgid "未检测到上传文件，请选择要上传的销售或促销数据文件。"
+msgstr "Aucun fichier détecté. Choisissez le fichier de ventes ou de promotions à importer."
+"Aucun fichier détecté. Choisissez le fichier de ventes ou de promotions à "
+"importer.Aucun fichier détecté. Choisissez le fichier de ventes ou de "
+"promotions à importer."
+
+#: apps/data_management/views.py:276
+msgid "上传完成，但未检测到有效记录，请检查 Excel 是否符合模板格式。"
+msgstr "Import terminé, mais aucune ligne valide n'a été trouvée. Vérifiez que le fichier Excel suit le modèle."
+"Import terminé, mais aucune ligne valide n'a été trouvée. Vérifiez que le "
+"fichier Excel suit le modèle.Import terminé, mais aucune ligne valide n'a "
+"été trouvée. Vérifiez que le fichier Excel suit le modèle."
+
+#: apps/data_management/views.py:536
+msgid "销售数据更新成功"
+msgstr "Données de vente mises à jour"
+
+#: apps/data_management/views.py:549
+msgid "促销数据更新成功"
+msgstr "Données de promotion mises à jour"
+
+#: apps/data_management/views.py:554
+msgid "销售数据删除成功"
+msgstr "Données de vente supprimées"
+
+#: apps/data_management/views.py:559
+msgid "促销数据删除成功"
+msgstr "Données de promotion supprimées"
+
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:4
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:7
+#: templates/base.html:56
+msgid "需求预测"
+msgstr "Prévision de la demande"
+
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:27
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:35
+#: apps/model_training/templates/model_training/train.html:27
+msgid "产品一级分类"
+msgstr "Catégorie de produit niveau 1"
+
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:31
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:40
+#: apps/model_training/templates/model_training/train.html:31
+msgid "产品二级分类"
+msgstr "Catégorie de produit niveau 2"
+
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:35
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:45
+#: apps/model_training/templates/model_training/train.html:35
+msgid "产品三级分类"
+msgstr "Catégorie de produit niveau 3"
+
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:39
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:50
+#: apps/model_training/templates/model_training/train.html:39
+msgid "产品四级分类"
+msgstr "Catégorie de produit niveau 4"
+
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:43
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:55
+#: apps/model_training/templates/model_training/train.html:43
+msgid "产品五级分类"
+msgstr "Catégorie de produit niveau 5"
+
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:51
+#: apps/model_training/templates/model_training/train.html:51
+msgid "提示: 未勾选的分类层级将自动视为全选"
+msgstr "Astuce : un niveau de catégorie non coché est considéré comme « tout sélectionner »"
+"Astuce : un niveau de catégorie non coché est considéré comme « tout "
+"sélectionner »Astuce : un niveau de catégorie non coché est considéré comme "
+"« tout sélectionner »"
+
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:67
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:79
+msgid "预测周期(月)"
+msgstr "Horizon de prévision (mois)"
+
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:72
+msgid "开始预测"
+msgstr "Lancer la prévision"
+
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:82
+msgid "选择模型"
+msgstr "Choisir un modèle"
+
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:87
+msgid "自动匹配"
+msgstr "Correspondance automatique"
+
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:91
+msgid "手动选择"
+msgstr "Sélection manuelle"
+
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:97
+msgid "刷新模型列表"
+msgstr "Actualiser la liste des modèles"
+
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:98
+msgid "刷新"
+msgstr "Actualiser"
+
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:104
+msgid "选择"
+msgstr "Choisir"
+
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:104
+#: apps/model_training/templates/model_training/model_results.html:23
+msgid "模型名称"
+msgstr "Nom du modèle"
+
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:104
+msgid "适用区域"
+msgstr "Région"
+
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:104
+msgid "适用SKU"
+msgstr "SKU"
+
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:104
+msgid "层级"
+msgstr "Niveau"
+
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:104
+msgid "训练时间"
+msgstr "Entraîné le"
+
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:110
+msgid "暂无已训练模型，将自动触发模型训练"
+msgstr "Aucun modèle entraîné, l'entraînement démarrera automatiquement"
+
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:114
+#: apps/demand_prediction/templates/demand_prediction/results.html:145
+msgid "第一页"
+msgstr "Première page"
+
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:120
+#: apps/demand_prediction/templates/demand_prediction/results.html:152
+msgid "最后一页"
+msgstr "Dernière page"
+
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:123
+msgid "跳至"
+msgstr "Aller à"
+
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:150
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:287
+#: apps/model_training/templates/model_training/train.html:91
+msgid "解析分类树失败"
+msgstr "Échec de l'analyse de l'arborescence des catégories"
+
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:155
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:291
+#: apps/model_training/templates/model_training/train.html:96
+msgid "解析区域数据失败"
+msgstr "Échec de l'analyse des données de région"
+
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:160
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:295
+#: apps/model_training/templates/model_training/train.html:101
+msgid "解析SKU区域映射失败"
+msgstr "Échec de l'analyse de la correspondance SKU-région"
+
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:177
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:311
+#: apps/model_training/templates/model_training/train.html:128
+msgid "（无）"
+msgstr "(aucun)"
+
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:395
+#: apps/demand_prediction/templates/demand_prediction/results.html:370
+msgid "共"
+msgstr "Total"
+
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:395
+msgid "个模型"
+msgstr "modèles"
+
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:402
+msgid "刷新中…"
+msgstr "Actualisation…"
+
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:434
+msgid "刷新失败"
+msgstr "Échec de l'actualisation"
+
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:438
+msgid "刷新失败:"
+msgstr "Échec de l'actualisation :"
+
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:486
+msgid "一级"
+msgstr "Niveau 1"
+
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:486
+msgid "二级"
+msgstr "Niveau 2"
+
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:487
+msgid "三级"
+msgstr "Niveau 3"
+
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:487
+msgid "四级"
+msgstr "Niveau 4"
+
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:487
+msgid "五级"
+msgstr "Niveau 5"
+
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:504
+#: apps/demand_prediction/views.py:351 apps/demand_prediction/views.py:352
+#: apps/model_training/templates/model_training/train.html:317
+msgid "请选择至少一个销售区域"
+msgstr "Veuillez sélectionner au moins une région de vente"
+
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:535
+msgid "预测中…"
+msgstr "Prévision en cours…"
+
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:543
+#: apps/model_training/templates/model_training/train.html:350
+msgid "服务器返回"
+msgstr "Le serveur a renvoyé"
+
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:550
+#: apps/demand_prediction/templates/demand_prediction/results.html:475
+#: apps/model_training/templates/model_training/train.html:357
+msgid "未知错误"
+msgstr "Erreur inconnue"
+
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:552
+#: apps/model_training/templates/model_training/train.html:359
+msgid "诊断: 区域="
+msgstr "Diagnostic : région="
+
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:564
+#: apps/model_training/templates/model_training/train.html:372
+msgid "网络错误:"
+msgstr "Erreur réseau :"
+
+#: apps/demand_prediction/templates/demand_prediction/forecast.html:605
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:536
+#: apps/model_training/templates/model_training/train.html:430
+msgid "（无可选区域—请先选产品）"
+msgstr "(aucune région disponible — choisissez d'abord un produit)"
+
+#: apps/demand_prediction/templates/demand_prediction/results.html:12
+msgid "预测结果"
+msgstr "Résultats de prévision"
+
+#: apps/demand_prediction/templates/demand_prediction/results.html:16
+msgid "组合数："
+msgstr "Combinaisons :"
+
+#: apps/demand_prediction/templates/demand_prediction/results.html:17
+msgid "平均准确率："
+msgstr "Précision moyenne :"
+
+#: apps/demand_prediction/templates/demand_prediction/results.html:22
+msgid "部分组合失败："
+msgstr "Certaines combinaisons ont échoué :"
+
+#: apps/demand_prediction/templates/demand_prediction/results.html:36
+msgid "预测比较图"
+msgstr "Graphique de comparaison des prévisions"
+
+#: apps/demand_prediction/templates/demand_prediction/results.html:39
+msgid "选择组合："
+msgstr "Choisir la combinaison :"
+
+#: apps/demand_prediction/templates/demand_prediction/results.html:42
+msgid "区域:"
+msgstr "Région :"
+
+#: apps/demand_prediction/templates/demand_prediction/results.html:63
+#: apps/demand_prediction/templates/demand_prediction/results.html:561
+msgid "详细预测数据"
+msgstr "Données détaillées de prévision"
+
+#: apps/demand_prediction/templates/demand_prediction/results.html:66
+msgid "修改"
+msgstr "Modifier"
+
+#: apps/demand_prediction/templates/demand_prediction/results.html:66
+#: apps/demand_prediction/templates/demand_prediction/results.html:104
+#: apps/demand_prediction/templates/demand_prediction/results.html:539
+msgid "调整后预测"
+msgstr "Prévision ajustée"
+
+#: apps/demand_prediction/templates/demand_prediction/results.html:66
+msgid "后按回车保存"
+msgstr "puis appuyez sur Entrée pour enregistrer"
+
+#: apps/demand_prediction/templates/demand_prediction/results.html:68
+msgid "导出Excel"
+msgstr "Exporter vers Excel"
+
+#: apps/demand_prediction/templates/demand_prediction/results.html:83
+#: apps/demand_prediction/templates/demand_prediction/results.html:532
+#: apps/model_training/templates/model_training/model_results.html:101
+msgid "SKU/分类代码"
+msgstr "Code SKU / catégorie"
+
+#: apps/demand_prediction/templates/demand_prediction/results.html:89
+#: apps/demand_prediction/templates/demand_prediction/results.html:534
+#: apps/model_training/templates/model_training/model_results.html:103
+#: apps/model_training/views.py:32
+msgid "一级分类"
+msgstr "Catégorie niveau 1"
+
+#: apps/demand_prediction/templates/demand_prediction/results.html:92
+#: apps/demand_prediction/templates/demand_prediction/results.html:535
+#: apps/model_training/templates/model_training/model_results.html:104
+#: apps/model_training/views.py:33
+msgid "二级分类"
+msgstr "Catégorie niveau 2"
+
+#: apps/demand_prediction/templates/demand_prediction/results.html:95
+#: apps/demand_prediction/templates/demand_prediction/results.html:536
+#: apps/model_training/templates/model_training/model_results.html:105
+#: apps/model_training/views.py:34
+msgid "三级分类"
+msgstr "Catégorie niveau 3"
+
+#: apps/demand_prediction/templates/demand_prediction/results.html:101
+#: apps/demand_prediction/templates/demand_prediction/results.html:538
+msgid "原始预测"
+msgstr "Prévision initiale"
+
+#: apps/demand_prediction/templates/demand_prediction/results.html:108
+msgid "筛选区域..."
+msgstr "Filtrer la région…"
+
+#: apps/demand_prediction/templates/demand_prediction/results.html:109
+msgid "筛选SKU..."
+msgstr "Filtrer le SKU…"
+
+#: apps/demand_prediction/templates/demand_prediction/results.html:110
+msgid "筛选物料..."
+msgstr "Filtrer l'article…"
+
+#: apps/demand_prediction/templates/demand_prediction/results.html:111
+msgid "筛选一级..."
+msgstr "Filtrer le niveau 1…"
+
+#: apps/demand_prediction/templates/demand_prediction/results.html:112
+msgid "筛选二级..."
+msgstr "Filtrer le niveau 2…"
+
+#: apps/demand_prediction/templates/demand_prediction/results.html:113
+msgid "筛选三级..."
+msgstr "Filtrer le niveau 3…"
+
+#: apps/demand_prediction/templates/demand_prediction/results.html:114
+msgid "如 2025-01..."
+msgstr "ex. 2025-01…"
+
+#: apps/demand_prediction/templates/demand_prediction/results.html:115
+#: apps/demand_prediction/templates/demand_prediction/results.html:116
+msgid "筛选..."
+msgstr "Filtrer…"
+
+#: apps/demand_prediction/templates/demand_prediction/results.html:143
+msgid "共 0 条记录"
+msgstr "0 enregistrement au total"
+
+#: apps/demand_prediction/templates/demand_prediction/results.html:148
+msgid "第"
+msgstr "Page"
+
+#: apps/demand_prediction/templates/demand_prediction/results.html:149
+msgid "页 / 共"
+msgstr "sur"
+
+#: apps/demand_prediction/templates/demand_prediction/results.html:149
+msgid "页"
+msgstr "pages"
+
+#: apps/demand_prediction/templates/demand_prediction/results.html:157
+msgid "暂无预测结果。"
+msgstr "Aucun résultat de prévision."
+
+#: apps/demand_prediction/templates/demand_prediction/results.html:163
+msgid "返回预测"
+msgstr "Retour à la prévision"
+
+#: apps/demand_prediction/templates/demand_prediction/results.html:193
+#: apps/model_training/templates/model_training/model_results.html:328
+msgid "回测预测"
+msgstr "Prévision sur historique"
+
+#: apps/demand_prediction/templates/demand_prediction/results.html:203
+#: apps/model_training/templates/model_training/model_results.html:341
+msgid "未来预测"
+msgstr "Prévision future"
+
+#: apps/demand_prediction/templates/demand_prediction/results.html:212
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:245
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:706
+#: apps/model_training/templates/model_training/model_results.html:107
+#: apps/model_training/templates/model_training/model_results.html:353
+msgid "实际销量"
+msgstr "Ventes réelles"
+
+#: apps/demand_prediction/templates/demand_prediction/results.html:230
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:244
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:740
+msgid "月份"
+msgstr "Mois"
+
+#: apps/demand_prediction/templates/demand_prediction/results.html:370
+msgid "条记录"
+msgstr "enregistrements"
+
+#: apps/demand_prediction/templates/demand_prediction/results.html:374
+msgid "显示"
+msgstr "Afficher"
+
+#: apps/demand_prediction/templates/demand_prediction/results.html:481
+msgid "调整保存失败:"
+msgstr "Échec de l'enregistrement de l'ajustement :"
+
+#: apps/demand_prediction/templates/demand_prediction/results.html:482
+msgid "保存失败:"
+msgstr "Échec de l'enregistrement :"
+
+#: apps/demand_prediction/templates/demand_prediction/results.html:544
+msgid "暂无数据可导出"
+msgstr "Aucune donnée à exporter"
+
+#: apps/demand_prediction/templates/demand_prediction/results.html:568
+msgid "预测数据_"
+msgstr "donnees_prevision_"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:4
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:13
+msgid "What-If 促销模拟分析"
+msgstr "Simulation de promotion What-If"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:25
+msgid "分析条件"
+msgstr "Conditions d'analyse"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:74
+msgid "请在上方格选"
+msgstr "Sélectionnez dans la grille ci-dessus"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:74
+msgid "最深层级的一或多个分类 / SKU"
+msgstr "une ou plusieurs catégories / SKU du niveau le plus profond"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:74
+msgid "和"
+msgstr "et"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:75
+msgid "系统会取最深层级中第一个选中项作为分析目标，并自动匹配最优模型。"
+msgstr "Le système utilise le premier élément sélectionné du niveau le plus profond comme cible et sélectionne automatiquement le meilleur modèle."
+"Le système utilise le premier élément sélectionné du niveau le plus profond "
+"comme cible et sélectionne automatiquement le meilleur modèle.Le système "
+"utilise le premier élément sélectionné du niveau le plus profond comme cible "
+"et sélectionne automatiquement le meilleur modèle."
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:84
+msgid "促销力度调整"
+msgstr "Ajustement de la promotion"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:86
+msgid "正数表示在当前促销基础上增加促销力度，负数表示减少。例如 +10"
+msgstr "Une valeur positive augmente l'intensité actuelle de la promotion, une valeur négative la réduit. Par exemple, +10"
+"Une valeur positive augmente l'intensité actuelle de la promotion, une "
+"valeur négative la réduit. Par exemple, +10Une valeur positive augmente "
+"l'intensité actuelle de la promotion, une valeur négative la réduit. Par "
+"exemple, +10"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:86
+msgid " 表示比当前促销再多投入 10"
+msgstr " signifie investir 10 de plus"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:97
+msgid "弹性系数（可选）"
+msgstr "Élasticité (facultatif)"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:99
+msgid "弹性系数表示：促销力度每变化 1"
+msgstr "L'élasticité indique : pour chaque variation de 1"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:99
+msgid "，销量变化多少"
+msgstr " de l'intensité de promotion, la variation correspondante du volume des ventes"
+" de l'intensité de promotion, la variation correspondante du volume des "
+"ventes de l'intensité de promotion, la variation correspondante du volume "
+"des ventes"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:99
+msgid "。例如弹性=2.5 表示促销+1"
+msgstr ". Par exemple, une élasticité de 2,5 signifie promotion +1"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:99
+msgid "→销量+2.5"
+msgstr "→ ventes +2,5"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:99
+msgid "。留空则从历史促销数据自动计算。"
+msgstr ". Laissez vide pour la calculer à partir de l'historique des promotions."
+". Laissez vide pour la calculer à partir de l'historique des promotions.. "
+"Laissez vide pour la calculer à partir de l'historique des promotions."
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:102
+msgid "自动计算"
+msgstr "Calcul automatique"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:106
+msgid "预测模型（可选）"
+msgstr "Modèle de prévision (facultatif)"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:108
+msgid ""
+"留空则系统自动匹配区域+产品组合的最优模型。也可手动指定一个已训练的模型进行预"
+"测。"
+msgstr "Laissez vide pour que le système choisisse le meilleur modèle pour la combinaison région + produit. Vous pouvez aussi désigner manuellement un modèle entraîné."
+"Laissez vide pour que le système choisisse le meilleur modèle pour la "
+"combinaison région + produit. Vous pouvez aussi désigner manuellement un "
+"modèle entraîné.Laissez vide pour que le système choisisse le meilleur "
+"modèle pour la combinaison région + produit. Vous pouvez aussi désigner "
+"manuellement un modèle entraîné."
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:111
+msgid "-- 自动匹配最优模型 --"
+msgstr "-- meilleur modèle automatique --"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:119
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:170
+msgid "准确率"
+msgstr "Précision"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:128
+msgid "开始模拟分析"
+msgstr "Lancer la simulation"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:130
+msgid "请先选择产品分类和销售区域"
+msgstr "Veuillez d'abord sélectionner une catégorie de produit et une région de vente"
+"Veuillez d'abord sélectionner une catégorie de produit et une région de "
+"venteVeuillez d'abord sélectionner une catégorie de produit et une région de "
+"vente"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:147
+msgid "促销调整"
+msgstr "Ajustement de la promotion"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:149
+msgid "促销力度变化"
+msgstr "Variation de l'intensité de promotion"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:156
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:194
+msgid "弹性系数"
+msgstr "Élasticité"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:158
+msgid "每1"
+msgstr "Chaque 1"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:158
+msgid "促销力度变化 →"
+msgstr " de variation de la promotion →"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:158
+msgid "销量变化。从历史促销数据计算得出。"
+msgstr " de variation des ventes. Calculée à partir de l'historique des promotions."
+" de variation des ventes. Calculée à partir de l'historique des promotions. "
+"de variation des ventes. Calculée à partir de l'historique des promotions."
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:161
+msgid "促销 →"
+msgstr "promo →"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:168
+msgid "基线总销量"
+msgstr "Ventes totales de référence"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:170
+msgid "模型"
+msgstr "Modèle"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:177
+msgid "What-If 总销量"
+msgstr "Ventes totales What-If"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:191
+msgid "弹性系数来源"
+msgstr "Origine de l'élasticité"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:194
+msgid "衡量促销力度对销量的影响程度。计算公式："
+msgstr "Mesure l'effet de la promotion sur les ventes. Formule :"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:195
+msgid "弹性 = (有促销月均销量 / 无促销月均销量 - 1) / 平均促销力度"
+msgstr "élasticité = (ventes mensuelles moyennes avec promotion / ventes mensuelles moyennes sans promotion - 1) / intensité moyenne de promotion"
+"élasticité = (ventes mensuelles moyennes avec promotion / ventes mensuelles "
+"moyennes sans promotion - 1) / intensité moyenne de promotionélasticité = "
+"(ventes mensuelles moyennes avec promotion / ventes mensuelles moyennes sans "
+"promotion - 1) / intensité moyenne de promotion"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:196
+msgid "。例如，无促销月均卖1000件，有促销月均卖1250件（+25"
+msgstr ". Par exemple, sans promotion la moyenne mensuelle est de 1 000 unités et avec promotion de 1 250 unités (+25"
+". Par exemple, sans promotion la moyenne mensuelle est de 1 000 unités et "
+"avec promotion de 1 250 unités (+25. Par exemple, sans promotion la moyenne "
+"mensuelle est de 1 000 unités et avec promotion de 1 250 unités (+25"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:196
+msgid "，促销平均力度0.10（即10"
+msgstr ", avec une intensité moyenne de 0,10 (soit 10"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:196
+msgid "折扣），则弹性 = 0.25 / 0.10 = 2.50。"
+msgstr " de remise), alors élasticité = 0,25 / 0,10 = 2,50."
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:197
+msgid "系统自动从历史 PromotionData 中计算，也可手动覆盖。"
+msgstr "Calculée automatiquement à partir de l'historique PromotionData, vous pouvez la remplacer manuellement."
+"Calculée automatiquement à partir de l'historique PromotionData, vous pouvez "
+"la remplacer manuellement.Calculée automatiquement à partir de l'historique "
+"PromotionData, vous pouvez la remplacer manuellement."
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:200
+msgid "数据可用性:"
+msgstr "Disponibilité des données :"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:202
+msgid "历史数据充足 ("
+msgstr "Historique suffisant ("
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:202
+msgid "个月有促销)"
+msgstr " mois avec promotions)"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:204
+msgid "历史促销数据不足，使用默认弹性系数 1.0"
+msgstr "Historique de promotion insuffisant, l'élasticité par défaut de 1,0 est utilisée"
+"Historique de promotion insuffisant, l'élasticité par défaut de 1,0 est "
+"utiliséeHistorique de promotion insuffisant, l'élasticité par défaut de 1,0 "
+"est utilisée"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:207
+msgid "基线月均:"
+msgstr "Moyenne mensuelle de référence :"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:208
+msgid "促销月均:"
+msgstr "Moyenne mensuelle avec promotion :"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:209
+msgid "促销平均力度:"
+msgstr "Intensité moyenne de promotion :"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:211
+msgid "最终弹性:"
+msgstr "Élasticité finale :"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:213
+msgid "用户指定"
+msgstr "Défini par l'utilisateur"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:217
+msgid "销量影响 = 促销调整"
+msgstr "Impact sur les ventes = ajustement de la promotion"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:217
+msgid "× 弹性系数"
+msgstr "× élasticité"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:227
+msgid "预测对比图"
+msgstr "Graphique de comparaison des prévisions"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:236
+msgid "逐月预测对比"
+msgstr "Comparaison des prévisions mois par mois"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:237
+msgid "个月"
+msgstr "mois"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:246
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:680
+msgid "基线预测"
+msgstr "Prévision de référence"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:247
+msgid "What-If预测"
+msgstr "Prévision What-If"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:248
+msgid "变化量"
+msgstr "Variation"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:249
+msgid "变化"
+msgstr "Variation"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:471
+msgid "区域="
+msgstr "région="
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:471
+msgid "，层级="
+msgstr ", niveau="
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:471
+msgid "，目标="
+msgstr ", cible="
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:474
+msgid "请选择销售区域"
+msgstr "Veuillez sélectionner une région de vente"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:475
+msgid "请选择产品分类"
+msgstr "Veuillez sélectionner une catégorie de produit"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:494
+msgid "请选择产品和销售区域后再开始分析"
+msgstr "Sélectionnez un produit et une région de vente avant de lancer l'analyse"
+"Sélectionnez un produit et une région de vente avant de lancer "
+"l'analyseSélectionnez un produit et une région de vente avant de lancer "
+"l'analyse"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:691
+msgid "What-If 影响区域"
+msgstr "Régions concernées par le What-If"
+
+#: apps/demand_prediction/templates/demand_prediction/what_if.html:736
+msgid "万"
+msgstr "10k"
+
+#: apps/demand_prediction/views.py:356 apps/demand_prediction/views.py:360
+msgid "当前筛选条件下没有可预测的项目，请调整筛选条件"
+msgstr "Aucun élément prévisible avec les filtres actuels, veuillez les ajuster"
+"Aucun élément prévisible avec les filtres actuels, veuillez les ajusterAucun "
+"élément prévisible avec les filtres actuels, veuillez les ajuster"
+
+#: apps/demand_prediction/views.py:374 apps/demand_prediction/views.py:375
+msgid "所选模型不存在"
+msgstr "Le modèle sélectionné n'existe pas"
+
+#: apps/demand_prediction/views.py:498
+msgid "预测完成"
+msgstr "Prévision terminée"
+
+#: apps/demand_prediction/views.py:574
+msgid "未指定预测场景"
+msgstr "Aucun scénario de prévision spécifié"
+
+#: apps/demand_prediction/views.py:580 apps/demand_prediction/views.py:1080
+msgid "预测场景不存在"
+msgstr "Le scénario de prévision n'existe pas"
+
+#: apps/demand_prediction/views.py:656
+msgid "仅支持 POST 请求"
+msgstr "Seules les requêtes POST sont prises en charge"
+
+#: apps/demand_prediction/views.py:696
+msgid "未找到预测结果，请重新执行预测"
+msgstr "Aucun résultat de prévision trouvé, veuillez relancer la prévision"
+
+#: apps/model_training/templates/model_training/model_results.html:10
+msgid "模型结果"
+msgstr "Résultats du modèle"
+
+#: apps/model_training/templates/model_training/model_results.html:37
+msgid "预测准确率"
+msgstr "Précision de la prévision"
+
+#: apps/model_training/templates/model_training/model_results.html:40
+msgid "(1 − |实际 − 预测| / 预测) × 100"
+msgstr "(1 − |réel − prévision| / prévision) × 100"
+
+#: apps/model_training/templates/model_training/model_results.html:51
+msgid "模型评估"
+msgstr "Évaluation du modèle"
+
+#: apps/model_training/templates/model_training/model_results.html:55
+msgid "MASE &lt; 1.0 有预测价值，&lt; 0.5 为优秀"
+msgstr "MASE &lt; 1.0 signifie utile, &lt; 0.5 signifie excellent"
+
+#: apps/model_training/templates/model_training/model_results.html:57
+msgid "暂无评估数据"
+msgstr "Aucune donnée d'évaluation"
+
+#: apps/model_training/templates/model_training/model_results.html:72
+msgid "销量预测对比图"
+msgstr "Graphique de comparaison des prévisions de ventes"
+
+#: apps/model_training/templates/model_training/model_results.html:74
+msgid "个实际点"
+msgstr "points réels"
+
+#: apps/model_training/templates/model_training/model_results.html:78
+msgid "未来 12 个月预测与实际数据对比"
+msgstr "Prévisions et données réelles des 12 prochains mois"
+
+#: apps/model_training/templates/model_training/model_results.html:92
+msgid "详细对比表"
+msgstr "Tableau comparatif détaillé"
+
+#: apps/model_training/templates/model_training/model_results.html:106
+msgid "预测销量"
+msgstr "Ventes prévues"
+
+#: apps/model_training/templates/model_training/model_results.html:108
+msgid "差异"
+msgstr "Écart"
+
+#: apps/model_training/templates/model_training/model_results.html:111
+msgid "例如 2024-07"
+msgstr "ex. 2024-07"
+
+#: apps/model_training/templates/model_training/model_results.html:112
+msgid "搜索代码…"
+msgstr "Rechercher un code…"
+
+#: apps/model_training/templates/model_training/model_results.html:113
+msgid "搜索名称…"
+msgstr "Rechercher un nom…"
+
+#: apps/model_training/templates/model_training/model_results.html:114
+msgid "搜索一级…"
+msgstr "Rechercher niveau 1…"
+
+#: apps/model_training/templates/model_training/model_results.html:115
+msgid "搜索二级…"
+msgstr "Rechercher niveau 2…"
+
+#: apps/model_training/templates/model_training/model_results.html:116
+msgid "搜索三级…"
+msgstr "Rechercher niveau 3…"
+
+#: apps/model_training/templates/model_training/model_results.html:117
+#: apps/model_training/templates/model_training/model_results.html:118
+msgid "例如 >100"
+msgstr "ex. &gt;100"
+
+#: apps/model_training/templates/model_training/model_results.html:119
+msgid "例如 >0"
+msgstr "ex. &gt;0"
+
+#: apps/model_training/templates/model_training/model_results.html:135
+#: apps/model_training/templates/model_training/model_results.html:142
+msgid "暂无"
+msgstr "N/D"
+
+#: apps/model_training/templates/model_training/model_results.html:161
+msgid "返回训练"
+msgstr "Retour à l'entraînement"
+
+#: apps/model_training/templates/model_training/model_results.html:162
+msgid "前往需求预测"
+msgstr "Aller à la prévision de la demande"
+
+#: apps/model_training/templates/model_training/model_results.html:166
+msgid "未找到该模型信息。"
+msgstr "Aucune information trouvée pour ce modèle."
+
+#: apps/model_training/templates/model_training/train.html:4
+#: apps/model_training/templates/model_training/train.html:7
+#: templates/base.html:50
+msgid "模型训练"
+msgstr "Entraînement du modèle"
+
+#: apps/model_training/templates/model_training/train.html:66
+msgid "开始训练"
+msgstr "Démarrer l'entraînement"
+
+#: apps/model_training/templates/model_training/train.html:341
+msgid "训练中…"
+msgstr "Entraînement…"
+
+#: apps/model_training/templates/model_training/train.html:360
+msgid ", 训练项目数="
+msgstr ", éléments entraînés="
+
+#: apps/model_training/views.py:31
+msgid "SKU级别"
+msgstr "Niveau SKU"
+
+#: apps/model_training/views.py:35
+msgid "四级分类"
+msgstr "Catégorie niveau 4"
+
+#: apps/model_training/views.py:36
+msgid "五级分类"
+msgstr "Catégorie niveau 5"
+
+#: apps/model_training/views.py:2286
+msgid "模型训练完成"
+msgstr "Entraînement du modèle terminé"
+
+#: apps/model_training/views.py:2344
+msgid "未指定模型"
+msgstr "Aucun modèle spécifié"
+
+#: apps/model_training/views.py:2350
+msgid "模型不存在"
+msgstr "Le modèle n'existe pas"
+
+#: apps/user_management/templates/user_management/dashboard.html:9
+msgid "用户仪表盘"
+msgstr "Tableau de bord utilisateur"
+
+#: apps/user_management/templates/user_management/dashboard.html:10
+msgid "这里显示用户信息、权限和系统状态。"
+msgstr "Informations utilisateur, permissions et état du système."
+
+#: apps/user_management/templates/user_management/login.html:9
+#: apps/user_management/templates/user_management/login.html:30
+msgid "登录"
+msgstr "Connexion"
+
+#: apps/user_management/templates/user_management/login.html:23
+#: apps/user_management/templates/user_management/register.html:13
+msgid "用户名"
+msgstr "Nom d'utilisateur"
+
+#: apps/user_management/templates/user_management/login.html:27
+#: apps/user_management/templates/user_management/register.html:21
+msgid "密码"
+msgstr "Mot de passe"
+
+#: apps/user_management/templates/user_management/permissions.html:9
+msgid "权限管理"
+msgstr "Permissions"
+
+#: apps/user_management/templates/user_management/permissions.html:10
+msgid "这里显示用户角色和权限设置。"
+msgstr "Rôles et permissions des utilisateurs."
+
+#: apps/user_management/templates/user_management/register.html:9
+#: apps/user_management/templates/user_management/register.html:24
+msgid "注册"
+msgstr "Créer un compte"
+
+#: apps/user_management/templates/user_management/register.html:17
+msgid "邮箱"
+msgstr "E-mail"
+
+#: apps/user_management/views.py:15
+msgid "请填写用户名和密码"
+msgstr "Veuillez saisir votre nom d'utilisateur et votre mot de passe"
+
+#: apps/user_management/views.py:26
+msgid "该账户已被禁用"
+msgstr "Ce compte a été désactivé"
+
+#: apps/user_management/views.py:28
+msgid "用户名或密码错误"
+msgstr "Nom d'utilisateur ou mot de passe incorrect"
+
+#: templates/base.html:7 templates/base.html:24 templates/base.html:102
+msgid "需求预测系统"
+msgstr "Système de prévision de la demande"
+
+#: templates/base.html:25
+msgid "折叠菜单"
+msgstr "Réduire le menu"
+
+#: templates/base.html:32
+msgid "首页"
+msgstr "Accueil"
+
+#: templates/base.html:38
+msgid "数据管理"
+msgstr "Gestion des données"
+
+#: templates/base.html:62
+msgid "What-If 分析"
+msgstr "Analyse What-If"
+
+#: templates/base.html:72
+msgid "退出登录"
+msgstr "Se déconnecter"
+
+#: templates/includes/language_switcher.html:6
+#: templates/includes/language_switcher.html:7
+msgid "语言"
+msgstr "Langue"

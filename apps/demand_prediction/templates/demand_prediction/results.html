@@ -1,0 +1,579 @@
+{% extends "base.html" %}
+{% load i18n i18n_dates %}
+
+{% block content %}
+<div class="page-container">
+
+    <!-- 页面标题 & 概要 -->
+    <div class="card card-hover mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start gap-3 flex-column flex-md-row">
+                <div>
+                    <h4 class="page-title mb-1"><i class="bi bi-bar-chart-fill me-2"></i>{% translate "预测结果" %}</h4>
+                    <p class="page-desc mb-0">{{ scenario_name }}</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <span class="badge bg-dark bg-opacity-10 text-dark">{% translate "组合数：" %}{{ total_combos }}</span>
+                    <span class="badge bg-dark bg-opacity-10 text-dark">{% translate "平均准确率：" %}{{ model_accuracy|floatformat:2 }}%</span>
+                </div>
+            </div>
+            {% if warning_errors %}
+            <div class="alert alert-warning mt-3 mb-0">
+                <i class="bi bi-exclamation-triangle me-2"></i>{% translate "部分组合失败：" %}{{ warning_errors|join:'；' }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 预测比较图 -->
+    <div class="card card-hover mb-4">
+        <div class="card-header bg-primary-subtle">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div class="d-flex align-items-center">
+                    <span class="icon-circle-sm bg-primary-subtle text-primary me-2">
+                        <i class="bi bi-graph-up"></i>
+                    </span>
+                    <span class="fw-semibold">{% translate "预测比较图" %}</span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <label for="comboSelector" class="form-label small text-muted mb-0 text-nowrap">{% translate "选择组合：" %}</label>
+                    <select id="comboSelector" class="form-select form-select-sm" style="width:auto;min-width:220px;">
+                        {% for c in combos %}
+                        <option value="{{ forloop.counter0 }}">{% translate "区域:" %} {{ c.region }} | SKU: {{ c.sku }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div style="min-height: 420px;">
+                <canvas id="forecastChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- 详细预测数据 -->
+    <div class="card card-hover mb-4">
+        <div class="card-header bg-primary-subtle">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div class="d-flex align-items-center">
+                    <span class="icon-circle-sm bg-primary-subtle text-primary me-2">
+                        <i class="bi bi-table"></i>
+                    </span>
+                    <span class="fw-semibold">{% translate "详细预测数据" %}</span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="text-muted small d-none d-md-inline">{% translate "修改" %}"{% translate "调整后预测" %}"{% translate "后按回车保存" %}</span>
+                    <button id="btnExportExcel" class="btn btn-outline-dark btn-sm">
+                        <i class="bi bi-file-earmark-excel"></i> {% translate "导出Excel" %}
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if forecasts %}
+            <div class="table-responsive">
+                <table id="forecastTable" class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th data-col="region" class="sortable" style="cursor:pointer;user-select:none;">
+                                {% translate "销售区域" %} <span class="sort-indicator text-primary"></span>
+                            </th>
+                            <th data-col="sku" class="sortable" style="cursor:pointer;user-select:none;">
+                                {% translate "SKU/分类代码" %} <span class="sort-indicator text-primary"></span>
+                            </th>
+                            <th data-col="material_name" class="sortable" style="cursor:pointer;user-select:none;">
+                                {% translate "物料名称" %} <span class="sort-indicator text-primary"></span>
+                            </th>
+                            <th data-col="cat_l1" class="sortable" style="cursor:pointer;user-select:none;">
+                                {% translate "一级分类" %} <span class="sort-indicator text-primary"></span>
+                            </th>
+                            <th data-col="cat_l2" class="sortable" style="cursor:pointer;user-select:none;">
+                                {% translate "二级分类" %} <span class="sort-indicator text-primary"></span>
+                            </th>
+                            <th data-col="cat_l3" class="sortable" style="cursor:pointer;user-select:none;">
+                                {% translate "三级分类" %} <span class="sort-indicator text-primary"></span>
+                            </th>
+                            <th data-col="date" class="sortable" style="cursor:pointer;user-select:none;">
+                                {% translate "日期" %} <span class="sort-indicator text-primary"></span>
+                            </th>
+                            <th data-col="original" class="sortable" style="cursor:pointer;user-select:none;">
+                                {% translate "原始预测" %} <span class="sort-indicator text-primary"></span>
+                            </th>
+                            <th data-col="adjusted" class="sortable" style="cursor:pointer;user-select:none;">
+                                {% translate "调整后预测" %} <span class="sort-indicator text-primary"></span>
+                            </th>
+                        </tr>
+                        <tr class="filter-row">
+                            <th><input class="form-control form-control-sm filter-input" data-col="region" placeholder="{% translate '筛选区域...' %}" autocomplete="off"></th>
+                            <th><input class="form-control form-control-sm filter-input" data-col="sku" placeholder="{% translate '筛选SKU...' %}" autocomplete="off"></th>
+                            <th><input class="form-control form-control-sm filter-input" data-col="material_name" placeholder="{% translate '筛选物料...' %}" autocomplete="off"></th>
+                            <th><input class="form-control form-control-sm filter-input" data-col="cat_l1" placeholder="{% translate '筛选一级...' %}" autocomplete="off"></th>
+                            <th><input class="form-control form-control-sm filter-input" data-col="cat_l2" placeholder="{% translate '筛选二级...' %}" autocomplete="off"></th>
+                            <th><input class="form-control form-control-sm filter-input" data-col="cat_l3" placeholder="{% translate '筛选三级...' %}" autocomplete="off"></th>
+                            <th><input class="form-control form-control-sm filter-input" data-col="date" placeholder="{% translate '如 2025-01...' %}" autocomplete="off"></th>
+                            <th><input class="form-control form-control-sm filter-input" data-col="original" placeholder="{% translate '筛选...' %}" autocomplete="off"></th>
+                            <th><input class="form-control form-control-sm filter-input" data-col="adjusted" placeholder="{% translate '筛选...' %}" autocomplete="off"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for f in forecasts %}
+                        <tr data-region="{{ f.region }}" data-sku="{{ f.sku }}" data-date="{{ f.date }}"
+                            data-original-val="{{ f.original_forecast }}">
+                            <td><span class="badge bg-light text-dark border">{{ f.region }}</span></td>
+                            <td><code class="text-dark">{{ f.sku }}</code></td>
+                            <td>{{ f.material_name|default:'--' }}</td>
+                            <td>{{ f.category_l1|default:'--' }}</td>
+                            <td>{{ f.category_l2|default:'--' }}</td>
+                            <td>{{ f.category_l3|default:'--' }}</td>
+                            <td>{{ f.date|localize_month }}</td>
+                            <td class="original-cell">{{ f.original_forecast|floatformat:2 }}</td>
+                            <td>
+                                <input type="number" class="form-control form-control-sm adjusted-input" data-result-id="{{ f.id }}"
+                                       value="{{ f.adjusted_forecast|floatformat:2 }}" step="0.01" min="0">
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 分页控件 -->
+            <div id="paginationBar" class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
+                <div class="text-muted small" id="pageInfo">{% translate "共 0 条记录" %}</div>
+                <div class="d-flex align-items-center gap-2">
+                    <button class="btn btn-outline-secondary btn-sm" id="btnFirst" title="{% translate '第一页' %}">&laquo;</button>
+                    <button class="btn btn-outline-secondary btn-sm" id="btnPrev" title="{% translate '上一页' %}">&lsaquo;</button>
+                    <span class="text-nowrap small">
+                        {% translate "第" %} <input type="number" id="pageNumInput" class="form-control form-control-sm d-inline-block"
+                               style="width:60px;text-align:center;" min="1" value="1"> {% translate "页 / 共" %} <span id="totalPages">1</span> {% translate "页" %}
+                    </span>
+                    <button class="btn btn-outline-secondary btn-sm" id="btnNext" title="{% translate '下一页' %}">&rsaquo;</button>
+                    <button class="btn btn-outline-secondary btn-sm" id="btnLast" title="{% translate '最后一页' %}">&raquo;</button>
+                    <span class="text-muted small ms-1" id="rangeInfo"></span>
+                </div>
+            </div>
+            {% else %}
+            <p class="text-muted py-3 text-center">{% translate "暂无预测结果。" %}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between">
+        <a href="{% url 'forecast:forecast' %}" class="btn btn-outline-dark">{% translate "返回预测" %}</a>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script>
+(function() {
+    // ======================== 图表 ========================
+    var allChartData = {{ all_chart_data_json|safe }};
+    var chartCtx = document.getElementById('forecastChart');
+    var forecastChart = null;
+
+    function renderChart(idx) {
+        if (!chartCtx) return;
+        if (!allChartData || idx >= allChartData.length) return;
+        var cd = allChartData[idx];
+        if (forecastChart) {
+            forecastChart.destroy();
+            forecastChart = null;
+        }
+        forecastChart = new Chart(chartCtx, {
+            type: 'line',
+            data: {
+                labels: cd.chart_labels,
+                datasets: [
+                    {
+                        label: '{% translate "回测预测" %}',
+                        data: cd.chart_backtest,
+                        borderColor: 'rgba(13, 110, 253, 0.95)',
+                        backgroundColor: 'rgba(13, 110, 253, 0.15)',
+                        borderDash: [8, 4],
+                        tension: 0.25,
+                        fill: false,
+                        pointRadius: 3
+                    },
+                    {
+                        label: '{% translate "未来预测" %}',
+                        data: cd.chart_future,
+                        borderColor: 'rgba(255, 159, 64, 0.95)',
+                        backgroundColor: 'rgba(255, 159, 64, 0.15)',
+                        tension: 0.25,
+                        fill: false,
+                        pointRadius: 3
+                    },
+                    {
+                        label: '{% translate "实际销量" %}',
+                        data: cd.chart_actuals,
+                        borderColor: 'rgba(25, 135, 84, 0.95)',
+                        backgroundColor: 'rgba(25, 135, 84, 0.15)',
+                        tension: 0.25,
+                        fill: false,
+                        pointRadius: 3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
+                scales: {
+                    x: { display: true, title: { display: true, text: '{% translate "月份" %}' } },
+                    y: { display: true, title: { display: true, text: '{% translate "销量" %}' }, beginAtZero: true }
+                }
+            }
+        });
+    }
+
+    if (allChartData && allChartData.length > 0) {
+        renderChart(0);
+    }
+
+    var comboSelector = document.getElementById('comboSelector');
+    if (comboSelector) {
+        comboSelector.addEventListener('change', function() {
+            renderChart(parseInt(this.value, 10));
+        });
+    }
+
+    // ======================== 表格排序/筛选/分页 ========================
+    var table = document.getElementById('forecastTable');
+    if (!table) return;
+
+    var tbody = table.querySelector('tbody');
+    var allRows = Array.from(tbody.querySelectorAll('tr'));
+    var ROWS_PER_PAGE = 20;
+    var currentPage = 1;
+    var currentSortCol = null;
+    var currentSortDir = 'asc';
+
+    var pageInfo = document.getElementById('pageInfo');
+    var totalPagesEl = document.getElementById('totalPages');
+    var rangeInfo = document.getElementById('rangeInfo');
+    var pageNumInput = document.getElementById('pageNumInput');
+    var btnFirst = document.getElementById('btnFirst');
+    var btnPrev = document.getElementById('btnPrev');
+    var btnNext = document.getElementById('btnNext');
+    var btnLast = document.getElementById('btnLast');
+
+    function getRowSortVal(row, col) {
+        var input;
+        switch (col) {
+            case 'region':   return (row.getAttribute('data-region') || '').toLowerCase();
+            case 'sku':      return (row.getAttribute('data-sku') || '').toLowerCase();
+            case 'material_name': return (row.cells[2]?.textContent.trim() || '').toLowerCase();
+            case 'cat_l1':   return (row.cells[3]?.textContent.trim() || '').toLowerCase();
+            case 'cat_l2':   return (row.cells[4]?.textContent.trim() || '').toLowerCase();
+            case 'cat_l3':   return (row.cells[5]?.textContent.trim() || '').toLowerCase();
+            case 'date':     return row.getAttribute('data-date') || '';
+            case 'original': return parseFloat(row.getAttribute('data-original-val')) || 0;
+            case 'adjusted': input = row.querySelector('.adjusted-input'); return input ? (parseFloat(input.value) || 0) : 0;
+            default: return '';
+        }
+    }
+
+    function getFilterValues() {
+        var filters = {};
+        document.querySelectorAll('.filter-input').forEach(function(inp) {
+            var val = inp.value.trim().toLowerCase();
+            if (val) filters[inp.getAttribute('data-col')] = val;
+        });
+        return filters;
+    }
+
+    function rowMatchesFilter(row, filters) {
+        var cols = Object.keys(filters);
+        for (var i = 0; i < cols.length; i++) {
+            var col = cols[i];
+            var filterVal = filters[col];
+            var cellText;
+            if (col === 'region') {
+                cellText = (row.getAttribute('data-region') || '').toLowerCase();
+            } else if (col === 'sku') {
+                cellText = (row.getAttribute('data-sku') || '').toLowerCase();
+            } else if (col === 'material_name') {
+                cellText = (row.cells[2]?.textContent.trim() || '').toLowerCase();
+            } else if (col === 'cat_l1') {
+                cellText = (row.cells[3]?.textContent.trim() || '').toLowerCase();
+            } else if (col === 'cat_l2') {
+                cellText = (row.cells[4]?.textContent.trim() || '').toLowerCase();
+            } else if (col === 'cat_l3') {
+                cellText = (row.cells[5]?.textContent.trim() || '').toLowerCase();
+            } else if (col === 'date') {
+                cellText = (row.getAttribute('data-date') || '').toLowerCase();
+            } else if (col === 'original') {
+                cellText = (row.querySelector('.original-cell') ? row.querySelector('.original-cell').textContent.trim().toLowerCase() : '');
+            } else if (col === 'adjusted') {
+                var inp = row.querySelector('.adjusted-input');
+                cellText = inp ? inp.value : '';
+            } else {
+                cellText = '';
+            }
+            if (cellText.indexOf(filterVal) === -1) return false;
+        }
+        return true;
+    }
+
+    function sortRows(rows) {
+        if (!currentSortCol) return rows;
+        return rows.slice().sort(function(a, b) {
+            var va = getRowSortVal(a, currentSortCol);
+            var vb = getRowSortVal(b, currentSortCol);
+            if (typeof va === 'number' && typeof vb === 'number') {
+                return currentSortDir === 'asc' ? va - vb : vb - va;
+            }
+            var sa = String(va), sb = String(vb);
+            var cmp = sa.localeCompare(sb);
+            return currentSortDir === 'asc' ? cmp : -cmp;
+        });
+    }
+
+    function updateSortIndicators() {
+        document.querySelectorAll('#forecastTable thead .sortable').forEach(function(th) {
+            var indicator = th.querySelector('.sort-indicator');
+            var col = th.getAttribute('data-col');
+            if (col === currentSortCol) {
+                indicator.textContent = currentSortDir === 'asc' ? ' ▲' : ' ▼';
+            } else {
+                indicator.textContent = '';
+            }
+        });
+    }
+
+    function renderTable() {
+        var filters = getFilterValues();
+        var visibleRows = allRows.filter(function(row) {
+            return rowMatchesFilter(row, filters);
+        });
+        visibleRows = sortRows(visibleRows);
+
+        var totalRows = visibleRows.length;
+        var totalPgs = Math.max(1, Math.ceil(totalRows / ROWS_PER_PAGE));
+        if (currentPage > totalPgs) currentPage = totalPgs;
+        if (currentPage < 1) currentPage = 1;
+        var startIdx = (currentPage - 1) * ROWS_PER_PAGE;
+        var endIdx = Math.min(startIdx + ROWS_PER_PAGE, totalRows);
+        var pageRows = visibleRows.slice(startIdx, endIdx);
+
+        allRows.forEach(function(r) { r.style.display = 'none'; });
+        pageRows.forEach(function(r) { r.style.display = ''; });
+
+        pageInfo.textContent = '{% translate "共" %}' + totalRows + '{% translate "条记录" %}';
+        totalPagesEl.textContent = totalPgs;
+        pageNumInput.value = currentPage;
+        pageNumInput.max = totalPgs;
+        rangeInfo.textContent = totalRows > 0 ? ('{% translate "显示" %}' + (startIdx + 1) + '-' + endIdx + '{% translate "条" %}') : '';
+
+        btnFirst.disabled = currentPage <= 1;
+        btnPrev.disabled = currentPage <= 1;
+        btnNext.disabled = currentPage >= totalPgs;
+        btnLast.disabled = currentPage >= totalPgs;
+
+        updateSortIndicators();
+    }
+
+    document.querySelectorAll('#forecastTable thead .sortable').forEach(function(th) {
+        th.addEventListener('click', function() {
+            var col = this.getAttribute('data-col');
+            if (currentSortCol === col) {
+                if (currentSortDir === 'asc') {
+                    currentSortDir = 'desc';
+                } else {
+                    currentSortCol = null;
+                    currentSortDir = 'asc';
+                }
+            } else {
+                currentSortCol = col;
+                currentSortDir = 'asc';
+            }
+            currentPage = 1;
+            renderTable();
+        });
+    });
+
+    var filterTimer = null;
+    document.querySelectorAll('.filter-input').forEach(function(inp) {
+        inp.addEventListener('input', function() {
+            clearTimeout(filterTimer);
+            filterTimer = setTimeout(function() {
+                currentPage = 1;
+                renderTable();
+            }, 250);
+        });
+    });
+
+    btnFirst.addEventListener('click', function() { currentPage = 1; renderTable(); });
+    btnPrev.addEventListener('click', function() { if (currentPage > 1) { currentPage--; renderTable(); } });
+    btnNext.addEventListener('click', function() {
+        var totalPgs = parseInt(totalPagesEl.textContent) || 1;
+        if (currentPage < totalPgs) { currentPage++; renderTable(); }
+    });
+    btnLast.addEventListener('click', function() {
+        var totalPgs = parseInt(totalPagesEl.textContent) || 1;
+        currentPage = totalPgs;
+        renderTable();
+    });
+    pageNumInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            var p = parseInt(this.value);
+            var totalPgs = parseInt(totalPagesEl.textContent) || 1;
+            if (!isNaN(p) && p >= 1 && p <= totalPgs) {
+                currentPage = p;
+                renderTable();
+            } else {
+                this.value = currentPage;
+            }
+        }
+    });
+    pageNumInput.addEventListener('blur', function() {
+        this.value = currentPage;
+    });
+
+    // ======================== 调整后预测自动保存 ========================
+    function getCsrfToken() {
+        var name = 'csrftoken';
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var c = cookies[i].trim();
+            if (c.indexOf(name + '=') === 0) {
+                return c.substring(name.length + 1);
+            }
+        }
+        return '';
+    }
+    var csrftoken = getCsrfToken();
+    var saveUrl = '{% url "forecast:update_adjusted_forecast" %}';
+
+    function updateAdjustedForecast(resultId, adjustedValue, inputElem) {
+        var prevValue = inputElem.dataset.savedValue;
+        fetch(saveUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken
+            },
+            body: JSON.stringify({ result_id: resultId, adjusted_forecast: adjustedValue })
+        }).then(function(resp) {
+            if (!resp.ok) throw new Error('HTTP ' + resp.status);
+            return resp.json();
+        }).then(function(data) {
+            if (data.success) {
+                if (inputElem) {
+                    inputElem.dataset.savedValue = String(adjustedValue);
+                }
+            } else {
+                throw new Error(data.message || '{% translate "未知错误" %}');
+            }
+        }).catch(function(err) {
+            if (inputElem) {
+                inputElem.value = prevValue;
+            }
+            console.error('{% translate "调整保存失败:" %}', err);
+            alert('{% translate "保存失败:" %}' + err.message);
+        });
+    }
+
+    allRows.forEach(function(row) {
+        var input = row.querySelector('.adjusted-input');
+        if (!input) return;
+        input.dataset.savedValue = input.value;
+
+        input.addEventListener('change', function() {
+            var adjustedValue = parseFloat(this.value);
+            if (isNaN(adjustedValue) || adjustedValue < 0) {
+                this.value = this.dataset.savedValue || '';
+                return;
+            }
+            if (String(adjustedValue) === this.dataset.savedValue) return;
+            var resultId = this.dataset.resultId;
+            updateAdjustedForecast(resultId, adjustedValue, this);
+        });
+
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                this.blur();
+            }
+        });
+    });
+
+    // ======================== 导出 Excel ========================
+    var btnExport = document.getElementById('btnExportExcel');
+    if (btnExport) {
+        btnExport.addEventListener('click', function() {
+            var exportData = [];
+            allRows.forEach(function(row) {
+                var region = row.getAttribute('data-region') || '';
+                var sku = row.getAttribute('data-sku') || '';
+                var date = row.getAttribute('data-date') || '';
+                var originalCell = row.querySelector('.original-cell');
+                var originalForecast = originalCell ? parseFloat(originalCell.textContent.trim()) : 0;
+                var input = row.querySelector('.adjusted-input');
+                var adjustedForecast = input ? parseFloat(input.value) : 0;
+                // 新增字段
+                var cells = row.querySelectorAll('td');
+                var materialName = cells.length > 2 ? (cells[2].textContent.trim() || '') : '';
+                var catL1 = cells.length > 3 ? (cells[3].textContent.trim() || '') : '';
+                var catL2 = cells.length > 4 ? (cells[4].textContent.trim() || '') : '';
+                var catL3 = cells.length > 5 ? (cells[5].textContent.trim() || '') : '';
+
+                exportData.push({
+                    '{% translate "销售区域" %}': region,
+                    '{% translate "SKU/分类代码" %}': sku,
+                    '{% translate "物料名称" %}': materialName,
+                    '{% translate "一级分类" %}': catL1,
+                    '{% translate "二级分类" %}': catL2,
+                    '{% translate "三级分类" %}': catL3,
+                    '{% translate "日期" %}': date,
+                    '{% translate "原始预测" %}': originalForecast,
+                    '{% translate "调整后预测" %}': adjustedForecast
+                });
+            });
+
+            if (exportData.length === 0) {
+                alert('{% translate "暂无数据可导出" %}');
+                return;
+            }
+
+            var ws = XLSX.utils.json_to_sheet(exportData);
+            ws['!cols'] = [
+                {wch: 14},
+                {wch: 22},
+                {wch: 18},
+                {wch: 14},
+                {wch: 14},
+                {wch: 14},
+                {wch: 12},
+                {wch: 14},
+                {wch: 14}
+            ];
+            var wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, '{% translate "详细预测数据" %}');
+
+            var wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+            var blob = new Blob([wbout], { type: 'application/octet-stream' });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = '{% translate "预测数据_" %}' + new Date().toISOString().slice(0, 10) + '.xlsx';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+    }
+
+    renderTable();
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,273 @@
+{% extends "base.html" %}
+{% load i18n i18n_dates %}
+{% block content %}
+<div class="page-container">
+
+    <!-- 页面标题 -->
+    <div class="page-header d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="page-title"><i class="bi bi-table me-2"></i>{% translate "数据查看与筛选" %}</h4>
+            <p class="page-desc mb-0">{% translate "浏览和筛选已上传的销售数据与促销数据" %}</p>
+        </div>
+        <a href="{% url 'data:upload' %}" class="btn btn-outline-dark btn-sm">
+            <i class="bi bi-cloud-upload me-1"></i>{% translate "上传新数据" %}
+        </a>
+    </div>
+
+    <!-- 筛选区域 -->
+    <div class="card card-hover mb-4">
+        <div class="card-header bg-primary-subtle">
+            <div class="d-flex align-items-center">
+                <span class="icon-circle-sm bg-primary-subtle text-primary me-2">
+                    <i class="bi bi-funnel"></i>
+                </span>
+                <span class="fw-semibold">{% translate "筛选条件" %}</span>
+            </div>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label small text-muted">{% translate "销售区域" %}</label>
+                    <select name="region" class="form-select form-select-sm">
+                        <option value="">{% translate "全部区域" %}</option>
+                        {% for region in regions %}
+                        <option value="{{ region }}" {% if selected_region == region %}selected{% endif %}>{{ region }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small text-muted">{% translate "物料号" %}</label>
+                    <select name="sku" class="form-select form-select-sm">
+                        <option value="">{% translate "全部SKU" %}</option>
+                        {% for sku in skus %}
+                        <option value="{{ sku }}" {% if selected_sku == sku %}selected{% endif %}>{{ sku }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small text-muted">{% translate "开始日期" %}</label>
+                    <input type="date" name="start_date" class="form-control form-control-sm" value="{{ start_date }}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small text-muted">{% translate "结束日期" %}</label>
+                    <input type="date" name="end_date" class="form-control form-control-sm" value="{{ end_date }}">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-dark btn-sm w-100">
+                        <i class="bi bi-funnel me-1"></i>{% translate "筛选" %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 销售数据 -->
+    <div class="card card-hover mb-4">
+        <div class="card-header bg-primary-subtle d-flex justify-content-between align-items-center py-3">
+            <div class="d-flex align-items-center">
+                <span class="icon-circle-sm bg-primary-subtle text-primary me-2">
+                    <i class="bi bi-cart3"></i>
+                </span>
+                <h6 class="mb-0 fw-semibold">{% translate "销售数据" %}</h6>
+                <span class="badge bg-light text-muted ms-2 fw-normal">{% if sales_data.paginator %}{{ sales_data.paginator.count }}{% else %}{{ sales_data|length }}{% endif %} {% translate "条" %}</span>
+            </div>
+            <a href="{% url 'data:export_data' %}{% if base_qs %}?{{ base_qs }}&{% else %}?{% endif %}sheet=sales&sales_order={{ current_sales_order }}" class="btn btn-outline-dark btn-sm">
+                <i class="bi bi-download me-1"></i>{% translate "导出" %}
+            </a>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">
+                                <button type="button" class="btn btn-sm btn-link text-muted text-decoration-none sort-btn p-0" data-param="sales_order" data-order="{% if current_sales_order == 'date' %}-date{% else %}date{% endif %}">
+                                    {% translate "日期" %}
+                                    {% if current_sales_order == 'date' %}<i class="bi bi-caret-up-fill ms-1 small"></i>
+                                    {% elif current_sales_order == '-date' %}<i class="bi bi-caret-down-fill ms-1 small"></i>
+                                    {% else %}<i class="bi bi-arrow-down-up ms-1 small opacity-25"></i>{% endif %}
+                                </button>
+                            </th>
+                            <th>{% translate "销售区域" %}</th>
+                            <th>{% translate "物料号" %}</th>
+                            <th>{% translate "物料名称" %}</th>
+                            <th>{% translate "产品分类" %}</th>
+                            <th>
+                                <button type="button" class="btn btn-sm btn-link text-muted text-decoration-none sort-btn p-0" data-param="sales_order" data-order="{% if current_sales_order == 'sales_quantity' %}-sales_quantity{% else %}sales_quantity{% endif %}">
+                                    {% translate "销量" %}
+                                    {% if current_sales_order == 'sales_quantity' %}<i class="bi bi-caret-up-fill ms-1 small"></i>
+                                    {% elif current_sales_order == '-sales_quantity' %}<i class="bi bi-caret-down-fill ms-1 small"></i>
+                                    {% else %}<i class="bi bi-arrow-down-up ms-1 small opacity-25"></i>{% endif %}
+                                </button>
+                            </th>
+                            <th class="pe-4">{% translate "操作" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in sales_data %}
+                        <tr>
+                            <td class="ps-4 text-nowrap">{{ item.date|localize_date }}</td>
+                            <td>{{ item.sales_region_code }}</td>
+                            <td class="font-monospace small">{{ item.product_data.material_number }}</td>
+                            <td>{{ item.product_data.material_name }}</td>
+                            <td class="small text-muted">
+                                {{ item.product_data.product_category_level1 }}
+                                {% if item.product_data.product_category_level2 %} / {{ item.product_data.product_category_level2 }}{% endif %}
+                            </td>
+                            <td class="fw-semibold">{{ item.sales_quantity }}</td>
+                            <td class="pe-4">
+                                <a href="{% url 'data:adjust_data' %}" class="btn btn-outline-dark btn-sm">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center py-5 text-muted">{% translate "暂无销售数据" %}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% if sales_data.has_other_pages %}
+            <div class="border-top px-4 py-3">
+                <nav>
+                    <ul class="pagination pagination-sm justify-content-center mb-0">
+                        {% if sales_data.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="{% url 'data:view_data' %}{% if base_qs %}?{{ base_qs }}&{% else %}?{% endif %}sales_page={{ sales_data.previous_page_number }}&sales_order={{ current_sales_order }}">{% translate "上一页" %}</a>
+                        </li>
+                        {% endif %}
+                        {% for i in sales_page_numbers %}
+                            <li class="page-item {% if sales_data.number == i %}active{% endif %}">
+                                <a class="page-link" href="{% url 'data:view_data' %}{% if base_qs %}?{{ base_qs }}&{% else %}?{% endif %}sales_page={{ i }}&sales_order={{ current_sales_order }}">{{ i }}</a>
+                            </li>
+                        {% endfor %}
+                        {% if sales_data.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="{% url 'data:view_data' %}{% if base_qs %}?{{ base_qs }}&{% else %}?{% endif %}sales_page={{ sales_data.next_page_number }}&sales_order={{ current_sales_order }}">{% translate "下一页" %}</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 促销数据 -->
+    <div class="card card-hover mb-4">
+        <div class="card-header bg-primary-subtle d-flex justify-content-between align-items-center py-3">
+            <div class="d-flex align-items-center">
+                <span class="icon-circle-sm bg-primary-subtle text-primary me-2">
+                    <i class="bi bi-tag"></i>
+                </span>
+                <h6 class="mb-0 fw-semibold">{% translate "促销数据" %}</h6>
+                <span class="badge bg-light text-muted ms-2 fw-normal">{% if promotion_data.paginator %}{{ promotion_data.paginator.count }}{% else %}{{ promotion_data|length }}{% endif %} {% translate "条" %}</span>
+            </div>
+            <a href="{% url 'data:export_data' %}{% if base_qs %}?{{ base_qs }}&{% else %}?{% endif %}sheet=promo&promo_order={{ current_promo_order }}" class="btn btn-outline-dark btn-sm">
+                <i class="bi bi-download me-1"></i>{% translate "导出" %}
+            </a>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">
+                                <button type="button" class="btn btn-sm btn-link text-muted text-decoration-none sort-btn p-0" data-param="promo_order" data-order="{% if current_promo_order == 'date' %}-date{% else %}date{% endif %}">
+                                    {% translate "日期" %}
+                                    {% if current_promo_order == 'date' %}<i class="bi bi-caret-up-fill ms-1 small"></i>
+                                    {% elif current_promo_order == '-date' %}<i class="bi bi-caret-down-fill ms-1 small"></i>
+                                    {% else %}<i class="bi bi-arrow-down-up ms-1 small opacity-25"></i>{% endif %}
+                                </button>
+                            </th>
+                            <th>{% translate "销售区域" %}</th>
+                            <th>{% translate "物料号" %}</th>
+                            <th>{% translate "物料名称" %}</th>
+                            <th>
+                                <button type="button" class="btn btn-sm btn-link text-muted text-decoration-none sort-btn p-0" data-param="promo_order" data-order="{% if current_promo_order == 'promotion_strength' %}-promotion_strength{% else %}promotion_strength{% endif %}">
+                                    {% translate "促销力度" %}
+                                    {% if current_promo_order == 'promotion_strength' %}<i class="bi bi-caret-up-fill ms-1 small"></i>
+                                    {% elif current_promo_order == '-promotion_strength' %}<i class="bi bi-caret-down-fill ms-1 small"></i>
+                                    {% else %}<i class="bi bi-arrow-down-up ms-1 small opacity-25"></i>{% endif %}
+                                </button>
+                            </th>
+                            <th>{% translate "促销开始" %}</th>
+                            <th>{% translate "促销结束" %}</th>
+                            <th class="pe-4">{% translate "操作" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in promotion_data %}
+                        <tr>
+                            <td class="ps-4 text-nowrap">{{ item.date|localize_date }}</td>
+                            <td>{{ item.sales_region_code }}</td>
+                            <td class="font-monospace small">{{ item.product_data.material_number }}</td>
+                            <td>{{ item.product_data.material_name }}</td>
+                            <td class="fw-semibold">{{ item.promotion_strength|default:"-" }}</td>
+                            <td class="text-nowrap">{{ item.promotion_start_date|localize_date }}</td>
+                            <td class="text-nowrap">{{ item.promotion_end_date|localize_date }}</td>
+                            <td class="pe-4">
+                                <a href="{% url 'data:adjust_data' %}" class="btn btn-outline-dark btn-sm">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center py-5 text-muted">{% translate "暂无促销数据" %}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% if promotion_data.has_other_pages %}
+            <div class="border-top px-4 py-3">
+                <nav>
+                    <ul class="pagination pagination-sm justify-content-center mb-0">
+                        {% if promotion_data.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="{% url 'data:view_data' %}{% if base_qs %}?{{ base_qs }}&{% else %}?{% endif %}promo_page={{ promotion_data.previous_page_number }}&promo_order={{ current_promo_order }}">{% translate "上一页" %}</a>
+                        </li>
+                        {% endif %}
+                        {% for i in promo_page_numbers %}
+                            <li class="page-item {% if promotion_data.number == i %}active{% endif %}">
+                                <a class="page-link" href="{% url 'data:view_data' %}{% if base_qs %}?{{ base_qs }}&{% else %}?{% endif %}promo_page={{ i }}&promo_order={{ current_promo_order }}">{{ i }}</a>
+                            </li>
+                        {% endfor %}
+                        {% if promotion_data.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="{% url 'data:view_data' %}{% if base_qs %}?{{ base_qs }}&{% else %}?{% endif %}promo_page={{ promotion_data.next_page_number }}&promo_order={{ current_promo_order }}">{% translate "下一页" %}</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    document.querySelectorAll('.sort-btn').forEach(function(btn){
+        btn.addEventListener('click', function(){
+            var param = btn.getAttribute('data-param');
+            var order = btn.getAttribute('data-order');
+            var base = '{{ base_qs }}';
+            var url = "{% url 'data:view_data' %}" + (base ? ('?' + base + '&') : '?') + encodeURIComponent(param) + '=' + encodeURIComponent(order);
+            if(param.indexOf('sales') !== -1){
+                url += '&sales_page=1';
+            } else if(param.indexOf('promo') !== -1){
+                url += '&promo_page=1';
+            }
+            window.location.href = url;
+        });
+    });
+});
+</script>
+{% endblock %}

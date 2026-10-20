@@ -1,0 +1,404 @@
+{% extends "base.html" %}
+{% load i18n i18n_dates %}
+
+{% block content %}
+<div class="page-container">
+
+    {% if model %}
+    <!-- 页面标题 -->
+    <div class="page-header mb-4">
+        <h4 class="page-title"><i class="bi bi-clipboard-data me-2"></i>{% translate "模型结果" %}</h4>
+        <p class="page-desc">{{ model.model_name }} — {{ model.sales_region_code }} / {{ model.material_number }}</p>
+    </div>
+
+    <!-- 模型指标卡片 -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card card-hover h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="icon-circle-sm bg-primary-subtle text-primary me-2">
+                            <i class="bi bi-cpu"></i>
+                        </span>
+                        <h6 class="mb-0 fw-semibold text-muted small text-uppercase">{% translate "模型名称" %}</h6>
+                    </div>
+                    <p class="fw-semibold mb-1">{{ model.model_name }}</p>
+                    <small class="text-muted">{{ model.sales_region_code }} / {{ model.material_number }}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card card-hover h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="icon-circle-sm bg-primary-subtle text-primary me-2">
+                            <i class="bi bi-bullseye"></i>
+                        </span>
+                        <h6 class="mb-0 fw-semibold text-muted small text-uppercase">{% translate "预测准确率" %}</h6>
+                    </div>
+                    <p class="fw-bold fs-4 mb-1">{{ model.accuracy|floatformat:2 }}%</p>
+                    <small class="text-muted">{% translate "(1 − |实际 − 预测| / 预测) × 100" %}%</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card card-hover h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="icon-circle-sm bg-primary-subtle text-primary me-2">
+                            <i class="bi bi-speedometer2"></i>
+                        </span>
+                        <h6 class="mb-0 fw-semibold text-muted small text-uppercase">{% translate "模型评估" %}</h6>
+                    </div>
+                    {% if mase %}
+                    <p class="fw-bold fs-4 mb-1">MASE = {{ mase }}</p>
+                    <small class="text-muted">{% translate "MASE &lt; 1.0 有预测价值，&lt; 0.5 为优秀" %}</small>
+                    {% else %}
+                    <p class="text-muted mb-0">{% translate "暂无评估数据" %}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 预测对比图 -->
+    <div class="card card-hover mb-4">
+        <div class="card-header bg-primary-subtle">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <span class="icon-circle-sm bg-primary-subtle text-primary me-2">
+                        <i class="bi bi-graph-up"></i>
+                    </span>
+                    <span class="fw-semibold">{% translate "销量预测对比图" %}</span>
+                </div>
+                <span class="badge bg-dark bg-opacity-10 text-dark">{{ error_stats.actual_count }} {% translate "个实际点" %}</span>
+            </div>
+        </div>
+        <div class="card-body">
+            <p class="page-desc mb-3">{% translate "未来 12 个月预测与实际数据对比" %}</p>
+            <div style="min-height: 340px;">
+                <canvas id="forecastChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- 详细对比表 -->
+    <div class="card card-hover mb-4">
+        <div class="card-header bg-primary-subtle">
+            <div class="d-flex align-items-center">
+                <span class="icon-circle-sm bg-primary-subtle text-primary me-2">
+                    <i class="bi bi-table"></i>
+                </span>
+                <span class="fw-semibold">{% translate "详细对比表" %}</span>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive" style="max-height:520px; overflow:auto;">
+                <table class="table table-hover align-middle mb-0" id="comparisonTable">
+                    <thead>
+                    <tr>
+                        <th class="sortable" data-col="0" style="cursor:pointer;">{% translate "日期" %} <span class="sort-icon"></span></th>
+                        <th class="sortable" data-col="1" style="cursor:pointer;">{% translate "SKU/分类代码" %} <span class="sort-icon"></span></th>
+                        <th class="sortable" data-col="2" style="cursor:pointer;">{% translate "物料名称" %} <span class="sort-icon"></span></th>
+                        <th class="sortable" data-col="3" style="cursor:pointer;">{% translate "一级分类" %} <span class="sort-icon"></span></th>
+                        <th class="sortable" data-col="4" style="cursor:pointer;">{% translate "二级分类" %} <span class="sort-icon"></span></th>
+                        <th class="sortable" data-col="5" style="cursor:pointer;">{% translate "三级分类" %} <span class="sort-icon"></span></th>
+                        <th class="sortable" data-col="6" style="cursor:pointer;">{% translate "预测销量" %} <span class="sort-icon"></span></th>
+                        <th class="sortable" data-col="7" style="cursor:pointer;">{% translate "实际销量" %} <span class="sort-icon"></span></th>
+                        <th class="sortable" data-col="8" style="cursor:pointer;">{% translate "差异" %} <span class="sort-icon"></span></th>
+                    </tr>
+                    <tr class="filter-row">
+                        <th><input type="text" class="form-control form-control-sm col-filter" data-col="0" placeholder="{% translate '例如 2024-07' %}"></th>
+                        <th><input type="text" class="form-control form-control-sm col-filter" data-col="1" placeholder="{% translate '搜索代码…' %}"></th>
+                        <th><input type="text" class="form-control form-control-sm col-filter" data-col="2" placeholder="{% translate '搜索名称…' %}"></th>
+                        <th><input type="text" class="form-control form-control-sm col-filter" data-col="3" placeholder="{% translate '搜索一级…' %}"></th>
+                        <th><input type="text" class="form-control form-control-sm col-filter" data-col="4" placeholder="{% translate '搜索二级…' %}"></th>
+                        <th><input type="text" class="form-control form-control-sm col-filter" data-col="5" placeholder="{% translate '搜索三级…' %}"></th>
+                        <th><input type="text" class="form-control form-control-sm col-filter" data-col="6" placeholder="{% translate '例如 >100' %}"例如>100"></th>
+                        <th><input type="text" class="form-control form-control-sm col-filter" data-col="7" placeholder="{% translate '例如 >100' %}"例如>100"></th>
+                        <th><input type="text" class="form-control form-control-sm col-filter" data-col="8" placeholder="{% translate '例如 >0' %}"例如>0"></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in results %}
+                        <tr>
+                            <td>{{ r.date|localize_date }}</td>
+                            <td><span class="text-monospace small">{{ r.sku }}</span></td>
+                            <td>{{ r.material_name|default:'--' }}</td>
+                            <td>{{ r.category_l1|default:'--' }}</td>
+                            <td>{{ r.category_l2|default:'--' }}</td>
+                            <td>{{ r.category_l3|default:'--' }}</td>
+                            <td>
+                                {% if r.forecast is not None %}
+                                {{ r.forecast|floatformat:2 }}
+                                {% else %}
+                                <span class="text-muted">{% translate "暂无" %}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if r.actual is not None %}
+                                {{ r.actual|floatformat:2 }}
+                                {% else %}
+                                <span class="text-muted">{% translate "暂无" %}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if r.diff is not None %}
+                                {{ r.diff|floatformat:2 }}
+                                {% else %}
+                                <span class="text-muted">--</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between">
+        <a class="btn btn-outline-dark" href="{% url 'model:train' %}"><i class="bi bi-arrow-left me-1"></i>{% translate "返回训练" %}</a>
+        <a class="btn btn-dark" href="{% url 'forecast:forecast' %}"><i class="bi bi-arrow-right me-1"></i>{% translate "前往需求预测" %}</a>
+    </div>
+
+    {% else %}
+    <div class="alert alert-danger">{% translate "未找到该模型信息。" %}</div>
+    {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// ========== 对比表排序与筛选 ==========
+(function() {
+    const table = document.getElementById('comparisonTable');
+    if (!table) return;
+    const tbody = table.querySelector('tbody');
+    const filterInputs = table.querySelectorAll('.col-filter');
+    let sortCol = -1;
+    let sortDir = 1;
+
+    function getCellValue(tr, colIndex) {
+        const td = tr.children[colIndex];
+        if (!td) return '';
+        const text = td.textContent.trim();
+        const num = parseFloat(text);
+        if (!isNaN(num)) return num;
+        if (/^\d{4}-\d{2}/.test(text)) return text;
+        return text;
+    }
+
+    function getCellText(tr, colIndex) {
+        const td = tr.children[colIndex];
+        if (!td) return '';
+        return td.textContent.trim();
+    }
+    function getCellNum(tr, colIndex) {
+        const raw = getCellText(tr, colIndex);
+        const n = parseFloat(raw);
+        return isNaN(n) ? null : n;
+    }
+
+    function parseFilter(raw) {
+        var s = raw.trim();
+        if (!s) return null;
+        if (/^(>=|<=|!=|>|<|=)/.test(s)) {
+            var op = s.match(/^(>=|<=|!=|>|<|=)/)[0];
+            var num = parseFloat(s.substring(op.length));
+            if (!isNaN(num)) return { type: 'cmp', op: op, val: num };
+        }
+        if (/^-?\d+(\.\d+)?$/.test(s)) {
+            return { type: 'cmp', op: '=', val: parseFloat(s) };
+        }
+        var rangeMatch = s.match(/^(-?\d+(?:\.\d+)?)\s*-\s*(-?\d+(?:\.\d+)?)$/);
+        if (rangeMatch) {
+            return { type: 'range', lo: parseFloat(rangeMatch[1]), hi: parseFloat(rangeMatch[2]) };
+        }
+        return { type: 'text', keyword: s.toLowerCase() };
+    }
+
+    function matchFilter(cellNum, cellText, cond) {
+        if (!cond) return true;
+        if (cond.type === 'cmp') {
+            if (cellNum === null) return false;
+            switch (cond.op) {
+                case '>':  return cellNum >  cond.val;
+                case '<':  return cellNum <  cond.val;
+                case '>=': return cellNum >= cond.val;
+                case '<=': return cellNum <= cond.val;
+                case '=':  return cellNum === cond.val;
+                case '!=': return cellNum !== cond.val;
+            }
+            return false;
+        }
+        if (cond.type === 'range') {
+            if (cellNum === null) return false;
+            return cellNum >= cond.lo && cellNum <= cond.hi;
+        }
+        return cellText.toLowerCase().indexOf(cond.keyword) !== -1;
+    }
+
+    function sortTable() {
+        if (sortCol < 0) return;
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+        rows.sort(function(a, b) {
+            const va = getCellValue(a, sortCol);
+            const vb = getCellValue(b, sortCol);
+            if (typeof va === 'number' && typeof vb === 'number') {
+                return (va - vb) * sortDir;
+            }
+            return String(va).localeCompare(String(vb)) * sortDir;
+        });
+        rows.forEach(function(row) { tbody.appendChild(row); });
+
+        document.querySelectorAll('#comparisonTable .sort-icon').forEach(function(icon) {
+            icon.textContent = '';
+        });
+        const activeIcon = document.querySelector('#comparisonTable .sortable[data-col="' + sortCol + '"] .sort-icon');
+        if (activeIcon) {
+            activeIcon.textContent = sortDir === 1 ? ' ▲' : ' ▼';
+        }
+    }
+
+    table.querySelectorAll('.sortable').forEach(function(th) {
+        th.addEventListener('click', function() {
+            const col = parseInt(this.getAttribute('data-col'));
+            if (sortCol === col) {
+                sortDir = -sortDir;
+            } else {
+                sortCol = col;
+                sortDir = 1;
+            }
+            sortTable();
+        });
+    });
+
+    var parsedFilters = {};
+    function applyFilters() {
+        parsedFilters = {};
+        filterInputs.forEach(function(input) {
+            var col = parseInt(input.getAttribute('data-col'));
+            var cond = parseFilter(input.value);
+            if (cond) parsedFilters[col] = cond;
+        });
+
+        const rows = tbody.querySelectorAll('tr');
+        rows.forEach(function(row) {
+            var visible = true;
+            for (var colKey in parsedFilters) {
+                if (!parsedFilters.hasOwnProperty(colKey)) continue;
+                var colIdx = parseInt(colKey);
+                var cond = parsedFilters[colIdx];
+                var num = getCellNum(row, colIdx);
+                var text = getCellText(row, colIdx);
+                if (!matchFilter(num, text, cond)) {
+                    visible = false;
+                    break;
+                }
+            }
+            row.style.display = visible ? '' : 'none';
+        });
+    }
+
+    filterInputs.forEach(function(input) {
+        input.addEventListener('input', applyFilters);
+    });
+})();
+
+// ========== 预测对比图 ==========
+(function() {
+    const chartElement = document.getElementById('forecastChart');
+    if (!chartElement) {
+        return;
+    }
+    const labels = {{ chart_labels|safe }};
+    const backtestForecasts = {{ chart_forecasts_backtest|safe }};
+    const futureForecasts = {{ chart_forecasts_future|safe }};
+    const actuals = {{ chart_actuals|safe }};
+
+    new Chart(chartElement, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: '{% translate "回测预测" %}',
+                    data: backtestForecasts,
+                    borderColor: 'rgba(13, 110, 253, 0.95)',
+                    backgroundColor: 'rgba(13, 110, 253, 0.2)',
+                    borderWidth: 3,
+                    tension: 0.35,
+                    pointRadius: 4,
+                    pointBackgroundColor: 'rgba(13, 110, 253, 0.95)',
+                    borderDash: [8, 4],
+                    fill: false,
+                    spanGaps: false
+                },
+                {
+                    label: '{% translate "未来预测" %}',
+                    data: futureForecasts,
+                    borderColor: 'rgba(255, 159, 64, 0.95)',
+                    backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                    borderWidth: 3,
+                    tension: 0.35,
+                    pointRadius: 4,
+                    pointBackgroundColor: 'rgba(255, 159, 64, 0.95)',
+                    fill: false,
+                    spanGaps: false
+                },
+                {
+                    label: '{% translate "实际销量" %}',
+                    data: actuals,
+                    borderColor: 'rgba(25, 135, 84, 0.95)',
+                    backgroundColor: 'rgba(25, 135, 84, 0.2)',
+                    borderWidth: 3,
+                    tension: 0.35,
+                    pointRadius: 4,
+                    pointBackgroundColor: 'rgba(25, 135, 84, 0.95)',
+                    fill: false,
+                    spanGaps: false
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false
+            },
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: '{% translate "日期" %}'
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: '{% translate "销量" %}'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': ' + context.formattedValue;
+                        }
+                    }
+                }
+            }
+        }
+    });
+})();
+</script>
+{% endblock %}

@@ -1,6 +1,6 @@
 # Core runtime
 Django>=4.2.7
-pandas>=2.2.3
+pandas>=2.3.3
 numpy>=1.26
 openpyxl>=3.1.2
 XlsxWriter>=3.1.9

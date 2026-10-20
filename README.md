@@ -4,7 +4,7 @@
 train 14 time-series models per *region × product*, get multi-month forecasts you can adjust by
 hand, and simulate promotion scenarios before you commit to them.
 
-[![CI](https://github.com/OWNER/REPO/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/REPO/actions/workflows/ci.yml)
+[![CI](https://github.com/hackersong/demand-forecast/actions/workflows/ci.yml/badge.svg)](https://github.com/hackersong/demand-forecast/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 [![Django](https://img.shields.io/badge/django-4.2%2B-092E20.svg)](https://www.djangoproject.com/)
@@ -115,7 +115,7 @@ Additional highlights
 Five minutes from clone to a running instance:
 
 ```bash
-git clone https://github.com/OWNER/REPO.git demand_forecast
+git clone https://github.com/hackersong/demand-forecast.git demand_forecast
 cd demand_forecast
 
 python -m venv .venv

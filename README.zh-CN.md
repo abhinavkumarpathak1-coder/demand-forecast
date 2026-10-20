@@ -3,7 +3,7 @@
 **面向销售团队的自托管需求预测系统。** 从 Excel 导入销量与促销数据，按「区域 × 产品」自动训练
 14 种时序模型，生成未来多月的预测结果，可人工调整，并能在真正投入促销之前做 *What-If* 模拟。
 
-[![CI](https://github.com/OWNER/REPO/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/REPO/actions/workflows/ci.yml)
+[![CI](https://github.com/hackersong/demand-forecast/actions/workflows/ci.yml/badge.svg)](https://github.com/hackersong/demand-forecast/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 [![Django](https://img.shields.io/badge/django-4.2%2B-092E20.svg)](https://www.djangoproject.com/)
@@ -107,7 +107,7 @@ flowchart LR
 从 clone 到跑起来约五分钟：
 
 ```bash
-git clone https://github.com/OWNER/REPO.git demand_forecast
+git clone https://github.com/hackersong/demand-forecast.git demand_forecast
 cd demand_forecast
 
 python -m venv .venv

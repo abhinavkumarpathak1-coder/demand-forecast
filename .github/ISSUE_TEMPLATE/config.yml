@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
   - name: Usage and installation questions
-    url: https://github.com/OWNER/REPO/blob/main/docs/en/usage.md
+    url: https://github.com/hackersong/demand-forecast/blob/main/docs/en/usage.md
     about: Setup, configuration and module walkthroughs are documented here.
   - name: Report a security vulnerability
-    url: https://github.com/OWNER/REPO/blob/main/SECURITY.md
+    url: https://github.com/hackersong/demand-forecast/blob/main/SECURITY.md
     about: Please do not open a public issue for security problems.

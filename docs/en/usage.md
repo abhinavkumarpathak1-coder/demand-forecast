@@ -4,7 +4,7 @@ A typical session follows five steps: import data → explore → train → fore
 → simulate. Every page except the login page requires authentication.
 
 ## 1. Data Management (`/data/`)
-
+![Data Management](../images/data-management.png)
 ### Upload
 
 * `/data/upload/` accepts sales and promotion files in `.xlsx` format (≤ 10 MB).
@@ -23,7 +23,7 @@ A typical session follows five steps: import data → explore → train → fore
   A forecast value can also be overridden from the forecast result page.
 
 ## 2. Data Insight (`/insight/`)
-
+![Data Insights](../images/data-insights.png)
 * Pick one or more regions and SKUs, choose a date range and press **Search**.
 * Two pie charts show the Top-5 regions and Top-5 SKUs; clicking a slice opens
   the corresponding detail breakdown.
@@ -31,7 +31,7 @@ A typical session follows five steps: import data → explore → train → fore
   quarterly, monthly or weekly granularity.
 
 ## 3. Model Training (`/model/`)
-
+![Model Training](../images/model-training.png)
 1. Select the product hierarchy level (category level 1–5 or SKU) and the target
    items, then select at least one sales region. Unchecked levels mean "all".
 2. Press **Start training**. For every region × item combination the system
@@ -45,7 +45,7 @@ Training is also triggered automatically when a forecast is requested and no
 model exists yet.
 
 ## 4. Demand Forecast (`/forecast/`)
-
+![Demand Forecast](../images/demand-forecast.png)
 1. Choose the hierarchy level, the items and the regions, then the horizon
    (1–24 months, default 12).
 2. Model mode:
@@ -61,7 +61,7 @@ A forecast can be saved as a *scenario* and reloaded later from
 `/forecast/scenario/<id>/`.
 
 ## 5. What-If Analysis (`/forecast/what-if/`)
-
+![What-If Analysis](../images/what-if-analysis.png)
 * Select the deepest selected category level or SKU plus the regions.
 * Set **Promotion adjustment** (e.g. `+10` means invest 10 % more than today).
 * Leave **Elasticity** empty to derive it from history, or enter a value
